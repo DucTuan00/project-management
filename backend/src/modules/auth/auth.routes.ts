@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import { AppDataSource } from '@/config/database';
+import { AuthRepository } from '@/modules/auth/auth.repository';
+import { AuthService } from '@/modules/auth/auth.service';
 import { AuthController } from '@/modules/auth/auth.controller';
 import { validate } from '@/shared/middleware/validate.middleware';
 import { authenticate } from '@/shared/middleware/auth.middleware';
@@ -12,6 +15,10 @@ import {
   resetPasswordSchema,
 } from '@/modules/auth/auth.dto';
 
+const authRepository = new AuthRepository(AppDataSource);
+const authService = new AuthService(authRepository);
+const authController = new AuthController(authService);
+
 const router = Router();
 
 // Public routes
@@ -19,61 +26,61 @@ router.post(
   '/register',
   authRateLimit,
   validate(registerSchema),
-  AuthController.register,
+  authController.register,
 );
 
 router.post(
   '/login',
   authRateLimit,
   validate(loginSchema),
-  AuthController.login,
+  authController.login,
 );
 
 router.post(
   '/refresh',
   validate(refreshTokenSchema),
-  AuthController.refresh,
+  authController.refresh,
 );
 
 router.post(
   '/logout',
   validate(refreshTokenSchema),
-  AuthController.logout,
+  authController.logout,
 );
 
 router.post(
   '/verify-email',
   authRateLimit,
   validate(verifyEmailSchema),
-  AuthController.verifyEmail,
+  authController.verifyEmail,
 );
 
 router.post(
   '/resend-verification',
   authRateLimit,
   validate(forgotPasswordSchema),
-  AuthController.resendVerification,
+  authController.resendVerification,
 );
 
 router.post(
   '/forgot-password',
   authRateLimit,
   validate(forgotPasswordSchema),
-  AuthController.forgotPassword,
+  authController.forgotPassword,
 );
 
 router.post(
   '/reset-password',
   authRateLimit,
   validate(resetPasswordSchema),
-  AuthController.resetPassword,
+  authController.resetPassword,
 );
 
 // Protected routes
 router.get(
   '/me',
   authenticate,
-  AuthController.getMe,
+  authController.getMe,
 );
 
 export default router;

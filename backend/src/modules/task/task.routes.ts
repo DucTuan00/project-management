@@ -1,5 +1,9 @@
 import { Router } from 'express';
+import { AppDataSource } from '@/config/database';
 import { TaskController } from '@/modules/task/task.controller';
+import { TaskRepository } from '@/modules/task/task.repository';
+import { ProjectRepository } from '@/modules/project/project.repository';
+import { TaskService } from '@/modules/task/task.service';
 import { validate } from '@/shared/middleware/validate.middleware';
 import { authenticate } from '@/shared/middleware/auth.middleware';
 import {
@@ -8,8 +12,14 @@ import {
   changeStatusSchema,
   assigneeSchema,
   dependencySchema,
-  listTasksSchema,
+  listTasksParamsSchema,
+  listTasksQuerySchema,
 } from '@/modules/task/task.dto';
+
+const taskRepository = new TaskRepository(AppDataSource);
+const projectRepository = new ProjectRepository(AppDataSource);
+const taskService = new TaskService(taskRepository, projectRepository);
+const taskController = new TaskController(taskService);
 
 const router = Router();
 
@@ -20,67 +30,67 @@ router.use(authenticate);
 router.post(
   '/',
   validate(createTaskSchema),
-  TaskController.create,
+  taskController.create,
 );
 
 // List tasks in project
 router.get(
   '/project/:projectId',
-  validate(listTasksSchema, 'params'),
-  validate(listTasksSchema, 'query'),
-  TaskController.listByProject,
+  validate(listTasksParamsSchema, 'params'),
+  validate(listTasksQuerySchema, 'query'),
+  taskController.listByProject,
 );
 
 // Get task by ID
 router.get(
   '/:taskId',
-  TaskController.getById,
+  taskController.getById,
 );
 
 // Update task
 router.put(
   '/:taskId',
   validate(updateTaskSchema),
-  TaskController.update,
+  taskController.update,
 );
 
 // Delete task
 router.delete(
   '/:taskId',
-  TaskController.delete,
+  taskController.delete,
 );
 
 // Change task status
 router.put(
   '/:taskId/status',
   validate(changeStatusSchema),
-  TaskController.changeStatus,
+  taskController.changeStatus,
 );
 
 // Assign user to task
 router.post(
   '/:taskId/assignees',
   validate(assigneeSchema),
-  TaskController.assignUser,
+  taskController.assignUser,
 );
 
 // Remove assignee
 router.delete(
   '/:taskId/assignees/:userId',
-  TaskController.removeAssignee,
+  taskController.removeAssignee,
 );
 
 // Add dependency
 router.post(
   '/:taskId/dependencies',
   validate(dependencySchema),
-  TaskController.addDependency,
+  taskController.addDependency,
 );
 
 // Remove dependency
 router.delete(
   '/:taskId/dependencies/:dependsOnTaskId',
-  TaskController.removeDependency,
+  taskController.removeDependency,
 );
 
 export default router;

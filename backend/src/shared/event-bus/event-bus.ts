@@ -64,4 +64,7 @@ export const Events = {
   TASK_UNASSIGNED: 'task.unassigned',
   TASK_DELETED: 'task.deleted',
   COMMENT_CREATED: 'comment.created',
+  ATTACHMENT_UPLOADED: 'attachment.uploaded',
+  NOTIFICATION_CREATED: 'notification.created',
+  NOTIFICATION_READ: 'notification.read',
 } as const;

@@ -9,10 +9,12 @@ export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   alt?: string;
   name: string;
   size?: 'sm' | 'md' | 'lg';
+  showOnline?: boolean;
+  isOnline?: boolean;
 }
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, src, alt, name, size = 'md', ...props }, ref) => {
+  ({ className, src, alt, name, size = 'md', showOnline = false, isOnline = false, ...props }, ref) => {
     const sizeStyles = {
       sm: 'h-8 w-8 text-xs',
       md: 'h-10 w-10 text-sm',
@@ -40,6 +42,14 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
           />
         ) : (
           <span>{initials}</span>
+        )}
+        {showOnline && (
+          <span
+            className={cn(
+              'absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white',
+              isOnline ? 'bg-success-500' : 'bg-gray-300'
+            )}
+          />
         )}
       </div>
     );

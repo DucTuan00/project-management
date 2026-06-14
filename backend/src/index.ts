@@ -4,6 +4,8 @@ import { createRedisConnection, closeRedisConnection } from '@/config/redis';
 import { createApp } from '@/app';
 import { env } from '@/config/env';
 import { logger } from '@/shared/logger/logger';
+import { socketService } from '@/modules/socket/socket.service';
+import { AuthRepository } from '@/modules/auth/auth.repository';
 
 async function bootstrap(): Promise<void> {
   try {
@@ -30,9 +32,23 @@ async function bootstrap(): Promise<void> {
       logger.info(`API available at http://localhost:${env.PORT}${env.API_PREFIX}`);
     });
 
+    // Initialize Socket.IO
+    logger.info('Initializing Socket.IO...');
+    const userRepository = new AuthRepository(AppDataSource);
+    socketService.initialize(server, userRepository);
+    logger.info('Socket.IO initialized');
+
     // Graceful shutdown
     const shutdown = async (signal: string) => {
       logger.info(`${signal} received. Starting graceful shutdown...`);
+
+      // Shutdown Socket.IO first
+      try {
+        await socketService.shutdown();
+        logger.info('Socket.IO server closed');
+      } catch (err) {
+        logger.error({ err }, 'Error closing Socket.IO server');
+      }
 
       server.close(async () => {
         logger.info('HTTP server closed');

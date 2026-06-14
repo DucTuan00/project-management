@@ -40,6 +40,15 @@ export const taskApi = {
 
   getBoard: async (projectId: string): Promise<Record<string, Task[]>> => {
     const response = await apiClient.get(`/projects/${projectId}/board`);
-    return response.data.data;
+    const board = response.data.data;
+    // Transform from { columns: [{ id, tasks }] } to { [columnId]: Task[] }
+    if (board?.columns && Array.isArray(board.columns)) {
+      const result: Record<string, Task[]> = {};
+      for (const col of board.columns) {
+        result[col.id] = col.tasks || [];
+      }
+      return result;
+    }
+    return board;
   },
 };

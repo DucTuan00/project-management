@@ -59,8 +59,11 @@ export const taskParamsSchema = z.object({
   projectId: z.string().uuid('Invalid project ID').optional(),
 });
 
-export const listTasksSchema = z.object({
+export const listTasksParamsSchema = z.object({
   projectId: z.string().uuid('Invalid project ID'),
+});
+
+export const listTasksQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(VALID_STATUSES as [string, ...string[]]).optional(),
@@ -88,7 +91,7 @@ export type UpdateTaskDto = z.infer<typeof updateTaskSchema>;
 export type ChangeStatusDto = z.infer<typeof changeStatusSchema>;
 export type AssigneeDto = z.infer<typeof assigneeSchema>;
 export type DependencyDto = z.infer<typeof dependencySchema>;
-export type ListTasksQuery = z.infer<typeof listTasksSchema>;
+export type ListTasksQuery = z.infer<typeof listTasksQuerySchema>;
 export type BatchUpdatePositionsDto = z.infer<typeof batchUpdatePositionsSchema>;
 
 // Status transition map

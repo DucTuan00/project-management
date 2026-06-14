@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
+import { SocketProvider } from '@/providers/socket-provider';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { LoadingPage } from '@/components/shared/loading-spinner';
@@ -48,7 +49,9 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthProvider>
-      <DashboardContent>{children}</DashboardContent>
+      <SocketProvider>
+        <DashboardContent>{children}</DashboardContent>
+      </SocketProvider>
     </AuthProvider>
   );
 }

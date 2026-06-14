@@ -12,6 +12,9 @@ import workspaceModule from '@/modules/workspace/workspace.module';
 import projectModule from '@/modules/project/project.module';
 import taskModule from '@/modules/task/task.module';
 import kanbanModule from '@/modules/kanban/kanban.module';
+import commentModule from '@/modules/comment/comment.module';
+import attachmentModule from '@/modules/attachment/attachment.module';
+import notificationModule from '@/modules/notification/notification.module';
 
 export function createApp(): Express {
   const app = express();
@@ -53,6 +56,9 @@ export function createApp(): Express {
   app.use(`${env.API_PREFIX}/projects`, projectModule);
   app.use(`${env.API_PREFIX}/tasks`, taskModule);
   app.use(env.API_PREFIX, kanbanModule);
+  app.use(env.API_PREFIX, commentModule);
+  app.use(env.API_PREFIX, attachmentModule);
+  app.use(`${env.API_PREFIX}/notifications`, notificationModule);
 
   // 404 handler
   app.use((_req: Request, res: Response) => {

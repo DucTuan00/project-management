@@ -90,10 +90,11 @@ export const PROJECT_ROLES = {
 } as const;
 
 export const DEFAULT_COLUMNS = [
-  { id: 'todo', name: 'To Do', order: 0 },
-  { id: 'in_progress', name: 'In Progress', order: 1 },
-  { id: 'review', name: 'Review', order: 2 },
-  { id: 'done', name: 'Done', order: 3 },
+  { id: 'backlog', name: 'Backlog', order: 0 },
+  { id: 'todo', name: 'To Do', order: 1 },
+  { id: 'in_progress', name: 'In Progress', order: 2 },
+  { id: 'review', name: 'Review', order: 3 },
+  { id: 'done', name: 'Done', order: 4 },
 ];
 
 export const TOAST_DURATION = 5000;

@@ -53,10 +53,11 @@ export default function ProjectBoardPage() {
 
   // Default columns if settings not loaded
   const defaultColumns: BoardColumn[] = [
-    { id: 'todo', name: 'To Do', taskStatus: 'todo', order: 0 },
-    { id: 'in_progress', name: 'In Progress', taskStatus: 'in_progress', order: 1 },
-    { id: 'review', name: 'Review', taskStatus: 'review', order: 2 },
-    { id: 'done', name: 'Done', taskStatus: 'done', order: 3 },
+    { id: 'backlog', name: 'Backlog', taskStatus: 'backlog', order: 0 },
+    { id: 'todo', name: 'To Do', taskStatus: 'todo', order: 1 },
+    { id: 'in_progress', name: 'In Progress', taskStatus: 'in_progress', order: 2 },
+    { id: 'review', name: 'Review', taskStatus: 'review', order: 3 },
+    { id: 'done', name: 'Done', taskStatus: 'done', order: 4 },
   ];
 
   const columns: BoardColumn[] = settings?.columns

@@ -5,6 +5,7 @@ import { Search, Bell, LogOut, User, Settings } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useAuth } from '@/providers/auth-provider';
+import { NotificationDropdown } from '@/modules/notification/components/notification-dropdown';
 
 interface HeaderProps {
   title?: string;
@@ -52,10 +53,7 @@ export function Header({ title }: HeaderProps) {
         </div>
 
         {/* Notifications */}
-        <button className="relative rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-danger-500" />
-        </button>
+        <NotificationDropdown />
 
         {/* User menu */}
         {user && (

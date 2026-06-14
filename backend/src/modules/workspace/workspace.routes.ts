@@ -1,4 +1,9 @@
 import { Router } from 'express';
+import { AppDataSource } from '@/config/database';
+import { AuthRepository } from '@/modules/auth/auth.repository';
+import { RoleRepository } from '@/modules/role/role.repository';
+import { WorkspaceRepository } from '@/modules/workspace/workspace.repository';
+import { WorkspaceService } from '@/modules/workspace/workspace.service';
 import { WorkspaceController } from '@/modules/workspace/workspace.controller';
 import { validate } from '@/shared/middleware/validate.middleware';
 import { authenticate } from '@/shared/middleware/auth.middleware';
@@ -12,6 +17,12 @@ import {
   workspaceParamsSchema,
 } from '@/modules/workspace/workspace.dto';
 
+const authRepository = new AuthRepository(AppDataSource);
+const roleRepository = new RoleRepository(AppDataSource);
+const workspaceRepository = new WorkspaceRepository(AppDataSource);
+const workspaceService = new WorkspaceService(workspaceRepository, authRepository, roleRepository);
+const workspaceController = new WorkspaceController(workspaceService);
+
 const router = Router();
 
 // All workspace routes require authentication
@@ -21,18 +32,18 @@ router.use(authenticate);
 router.post(
   '/',
   validate(createWorkspaceSchema),
-  WorkspaceController.create,
+  workspaceController.create,
 );
 
 // List user's workspaces
-router.get('/', WorkspaceController.listUserWorkspaces);
+router.get('/', workspaceController.listUserWorkspaces);
 
 // Get workspace by ID
 router.get(
   '/:workspaceId',
   validate(workspaceParamsSchema, 'params'),
   requireWorkspaceMember,
-  WorkspaceController.getById,
+  workspaceController.getById,
 );
 
 // Update workspace
@@ -41,7 +52,7 @@ router.put(
   validate(workspaceParamsSchema, 'params'),
   validate(updateWorkspaceSchema),
   requireWorkspaceMember,
-  WorkspaceController.update,
+  workspaceController.update,
 );
 
 // Delete workspace
@@ -49,7 +60,7 @@ router.delete(
   '/:workspaceId',
   validate(workspaceParamsSchema, 'params'),
   requireWorkspaceMember,
-  WorkspaceController.delete,
+  workspaceController.delete,
 );
 
 // List members
@@ -57,7 +68,7 @@ router.get(
   '/:workspaceId/members',
   validate(workspaceParamsSchema, 'params'),
   requireWorkspaceMember,
-  WorkspaceController.listMembers,
+  workspaceController.listMembers,
 );
 
 // Invite member
@@ -66,7 +77,7 @@ router.post(
   validate(workspaceParamsSchema, 'params'),
   validate(inviteMemberSchema),
   requireWorkspaceMember,
-  WorkspaceController.inviteMember,
+  workspaceController.inviteMember,
 );
 
 // Update member role
@@ -75,7 +86,7 @@ router.put(
   validate(workspaceParamsSchema, 'params'),
   validate(updateMemberRoleSchema),
   requireWorkspaceMember,
-  WorkspaceController.updateMemberRole,
+  workspaceController.updateMemberRole,
 );
 
 // Remove member
@@ -83,7 +94,7 @@ router.delete(
   '/:workspaceId/members/:memberId',
   validate(workspaceParamsSchema, 'params'),
   requireWorkspaceMember,
-  WorkspaceController.removeMember,
+  workspaceController.removeMember,
 );
 
 // Transfer ownership
@@ -92,7 +103,7 @@ router.post(
   validate(workspaceParamsSchema, 'params'),
   validate(transferOwnershipSchema),
   requireWorkspaceMember,
-  WorkspaceController.transferOwnership,
+  workspaceController.transferOwnership,
 );
 
 export default router;

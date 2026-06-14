@@ -12,6 +12,8 @@ import {
   Edit2,
   X,
   Check,
+  MessageSquare,
+  Paperclip,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +23,8 @@ import { useToast } from '@/components/ui/toast';
 import { Task } from '../types';
 import { useUpdateTask, useDeleteTask } from '../queries';
 import { updateTaskSchema, UpdateTaskFormData } from '../schemas';
+import { CommentThread } from '@/modules/comment/components/comment-thread';
+import { AttachmentList } from '@/modules/attachment/components/attachment-list';
 import {
   STATUS_COLORS,
   PRIORITY_COLORS,
@@ -333,6 +337,12 @@ export function TaskDetail({ task, projectKey, members = [] }: TaskDetailProps) 
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Comments and Attachments sections */}
+      <div className="mt-6 space-y-6">
+        <CommentThread taskId={task.id} />
+        <AttachmentList taskId={task.id} />
       </div>
     </div>
   );
