@@ -1,17 +1,23 @@
-import { AppDataSource } from '@/config/database';
+import { DataSource, Repository } from 'typeorm';
 import { Role } from '@/modules/role/role.entity';
 import { Permission } from '@/modules/role/permission.entity';
 import { RolePermission } from '@/modules/role/role-permission.entity';
 import { IsNull } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-export const roleRepository = AppDataSource.getRepository(Role);
-export const permissionRepository = AppDataSource.getRepository(Permission);
-export const rolePermissionRepository = AppDataSource.getRepository(RolePermission);
-
 export class RoleRepository {
-  static async findByName(name: string, workspaceId?: string): Promise<Role | null> {
-    return roleRepository.findOne({
+  private readonly roleRepo: Repository<Role>;
+  private readonly permissionRepo: Repository<Permission>;
+  private readonly rolePermissionRepo: Repository<RolePermission>;
+
+  constructor(private readonly dataSource: DataSource) {
+    this.roleRepo = dataSource.getRepository(Role);
+    this.permissionRepo = dataSource.getRepository(Permission);
+    this.rolePermissionRepo = dataSource.getRepository(RolePermission);
+  }
+
+  async findByName(name: string, workspaceId?: string): Promise<Role | null> {
+    return this.roleRepo.findOne({
       where: {
         name,
         workspaceId: workspaceId || IsNull(),
@@ -20,14 +26,14 @@ export class RoleRepository {
     });
   }
 
-  static async findById(id: string): Promise<Role | null> {
-    return roleRepository.findOne({
+  async findById(id: string): Promise<Role | null> {
+    return this.roleRepo.findOne({
       where: { id, deletedAt: IsNull() },
     });
   }
 
-  static async findByWorkspaceId(workspaceId: string): Promise<Role[]> {
-    return roleRepository.find({
+  async findByWorkspaceId(workspaceId: string): Promise<Role[]> {
+    return this.roleRepo.find({
       where: {
         workspaceId,
         deletedAt: IsNull(),
@@ -36,31 +42,31 @@ export class RoleRepository {
     });
   }
 
-  static async getSystemRoles(): Promise<Role[]> {
-    return roleRepository.find({
+  async getSystemRoles(): Promise<Role[]> {
+    return this.roleRepo.find({
       where: { isSystem: true, deletedAt: IsNull() },
       order: { level: 'DESC' },
     });
   }
 
-  static async createRole(data: Partial<Role>): Promise<Role> {
-    const role = roleRepository.create({
+  async createRole(data: Partial<Role>): Promise<Role> {
+    const role = this.roleRepo.create({
       id: uuidv4(),
       ...data,
     });
-    return roleRepository.save(role);
+    return this.roleRepo.save(role);
   }
 
-  static async getPermissionsForRole(roleId: string): Promise<Permission[]> {
-    const rolePermissions = await rolePermissionRepository.find({
+  async getPermissionsForRole(roleId: string): Promise<Permission[]> {
+    const rolePermissions = await this.rolePermissionRepo.find({
       where: { roleId },
       relations: ['permission'],
     });
     return rolePermissions.map((rp) => rp.permission);
   }
 
-  static async assignPermission(roleId: string, permissionId: string): Promise<RolePermission> {
-    const existing = await rolePermissionRepository.findOne({
+  async assignPermission(roleId: string, permissionId: string): Promise<RolePermission> {
+    const existing = await this.rolePermissionRepo.findOne({
       where: { roleId, permissionId },
     });
 
@@ -68,19 +74,19 @@ export class RoleRepository {
       return existing;
     }
 
-    const rp = rolePermissionRepository.create({
+    const rp = this.rolePermissionRepo.create({
       id: uuidv4(),
       roleId,
       permissionId,
     });
-    return rolePermissionRepository.save(rp);
+    return this.rolePermissionRepo.save(rp);
   }
 
-  static async bulkAssignPermissions(
+  async bulkAssignPermissions(
     roleId: string,
     permissionIds: string[],
   ): Promise<void> {
-    const queryRunner = AppDataSource.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
@@ -108,8 +114,8 @@ export class RoleRepository {
     }
   }
 
-  static async userHasPermission(userId: string, permissionCode: string): Promise<boolean> {
-    const result = await rolePermissionRepository
+  async userHasPermission(userId: string, permissionCode: string): Promise<boolean> {
+    const result = await this.rolePermissionRepo
       .createQueryBuilder('rp')
       .innerJoin('rp.permission', 'p', 'p.code = :code', { code: permissionCode })
       .innerJoin('rp.role', 'r')

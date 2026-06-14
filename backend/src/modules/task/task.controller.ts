@@ -3,18 +3,20 @@ import { TaskService } from '@/modules/task/task.service';
 import { successResponse } from '@/shared/dto/response.dto';
 
 export class TaskController {
-  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+  constructor(private readonly taskService: TaskService) {}
+
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await TaskService.create(req.user!.userId, req.body);
+      const result = await this.taskService.create(req.user!.userId, req.body);
       res.status(201).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async listByProject(req: Request, res: Response, next: NextFunction): Promise<void> {
+  listByProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await TaskService.listByProject(
+      const result = await this.taskService.listByProject(
         req.params.projectId,
         req.user!.userId,
         req.query as any,
@@ -23,20 +25,20 @@ export class TaskController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await TaskService.getById(req.params.taskId, req.user!.userId);
+      const result = await this.taskService.getById(req.params.taskId, req.user!.userId);
       res.status(200).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await TaskService.update(
+      const result = await this.taskService.update(
         req.params.taskId,
         req.user!.userId,
         req.body,
@@ -45,20 +47,20 @@ export class TaskController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+  delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await TaskService.delete(req.params.taskId, req.user!.userId);
+      await this.taskService.delete(req.params.taskId, req.user!.userId);
       res.status(200).json(successResponse({ message: 'Task deleted successfully' }));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async changeStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+  changeStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await TaskService.changeStatus(
+      const result = await this.taskService.changeStatus(
         req.params.taskId,
         req.user!.userId,
         req.body,
@@ -67,11 +69,11 @@ export class TaskController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async assignUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  assignUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await TaskService.assignUser(
+      const result = await this.taskService.assignUser(
         req.params.taskId,
         req.user!.userId,
         req.body.userId,
@@ -80,11 +82,11 @@ export class TaskController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async removeAssignee(req: Request, res: Response, next: NextFunction): Promise<void> {
+  removeAssignee = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await TaskService.removeAssignee(
+      await this.taskService.removeAssignee(
         req.params.taskId,
         req.user!.userId,
         req.params.userId,
@@ -93,11 +95,11 @@ export class TaskController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async addDependency(req: Request, res: Response, next: NextFunction): Promise<void> {
+  addDependency = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await TaskService.addDependency(
+      const result = await this.taskService.addDependency(
         req.params.taskId,
         req.user!.userId,
         req.body.dependsOnTaskId,
@@ -107,11 +109,11 @@ export class TaskController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async removeDependency(req: Request, res: Response, next: NextFunction): Promise<void> {
+  removeDependency = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await TaskService.removeDependency(
+      await this.taskService.removeDependency(
         req.params.taskId,
         req.user!.userId,
         req.params.dependsOnTaskId,
@@ -120,5 +122,5 @@ export class TaskController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }

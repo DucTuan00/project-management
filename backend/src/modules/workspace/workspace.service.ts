@@ -12,21 +12,27 @@ import { logger } from '@/shared/logger/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 export class WorkspaceService {
-  static async create(userId: string, dto: CreateWorkspaceDto): Promise<WorkspaceResponse> {
+  constructor(
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly authRepository: AuthRepository,
+    private readonly roleRepository: RoleRepository,
+  ) {}
+
+  async create(userId: string, dto: CreateWorkspaceDto): Promise<WorkspaceResponse> {
     const slug = generateSlug(dto.name);
 
-    const existing = await WorkspaceRepository.findBySlug(slug);
+    const existing = await this.workspaceRepository.findBySlug(slug);
     if (existing) {
       throw new ConflictError('Workspace with this name already exists');
     }
 
     // Get the Workspace Owner role
-    const ownerRole = await RoleRepository.findByName('Workspace Owner');
+    const ownerRole = await this.roleRepository.findByName('Workspace Owner');
     if (!ownerRole) {
       throw new NotFoundError('Default role');
     }
 
-    const workspace = await WorkspaceRepository.create({
+    const workspace = await this.workspaceRepository.create({
       name: dto.name,
       slug,
       description: dto.description || null,
@@ -34,7 +40,7 @@ export class WorkspaceService {
     });
 
     // Add owner as member
-    await WorkspaceRepository.addMember({
+    await this.workspaceRepository.addMember({
       workspaceId: workspace.id,
       userId,
       roleId: ownerRole.id,
@@ -48,18 +54,18 @@ export class WorkspaceService {
     return toWorkspaceResponse(workspace);
   }
 
-  static async listUserWorkspaces(userId: string): Promise<WorkspaceResponse[]> {
-    const workspaces = await WorkspaceRepository.getUserWorkspaces(userId);
+  async listUserWorkspaces(userId: string): Promise<WorkspaceResponse[]> {
+    const workspaces = await this.workspaceRepository.getUserWorkspaces(userId);
     return workspaces.map(toWorkspaceResponse);
   }
 
-  static async getById(workspaceId: string, userId: string): Promise<WorkspaceResponse> {
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+  async getById(workspaceId: string, userId: string): Promise<WorkspaceResponse> {
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
 
-    const isMember = await WorkspaceRepository.isMember(workspaceId, userId);
+    const isMember = await this.workspaceRepository.isMember(workspaceId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this workspace');
     }
@@ -67,12 +73,12 @@ export class WorkspaceService {
     return toWorkspaceResponse(workspace);
   }
 
-  static async update(
+  async update(
     workspaceId: string,
     userId: string,
     dto: UpdateWorkspaceDto,
   ): Promise<WorkspaceResponse> {
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
@@ -83,19 +89,19 @@ export class WorkspaceService {
 
     if (dto.name && dto.name !== workspace.name) {
       const newSlug = generateSlug(dto.name);
-      const existing = await WorkspaceRepository.findBySlug(newSlug);
+      const existing = await this.workspaceRepository.findBySlug(newSlug);
       if (existing && existing.id !== workspaceId) {
         throw new ConflictError('Workspace with this name already exists');
       }
       (dto as any).slug = newSlug;
     }
 
-    const updated = await WorkspaceRepository.update(workspaceId, dto);
+    const updated = await this.workspaceRepository.update(workspaceId, dto);
     return toWorkspaceResponse(updated!);
   }
 
-  static async delete(workspaceId: string, userId: string): Promise<void> {
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+  async delete(workspaceId: string, userId: string): Promise<void> {
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
@@ -104,12 +110,12 @@ export class WorkspaceService {
       throw new ForbiddenError('Only the workspace owner can delete the workspace');
     }
 
-    await WorkspaceRepository.delete(workspaceId);
+    await this.workspaceRepository.delete(workspaceId);
     logger.info({ workspaceId, userId }, 'Workspace deleted');
   }
 
-  static async listMembers(workspaceId: string): Promise<WorkspaceMemberResponse[]> {
-    const members = await WorkspaceRepository.findMembers(workspaceId);
+  async listMembers(workspaceId: string): Promise<WorkspaceMemberResponse[]> {
+    const members = await this.workspaceRepository.findMembers(workspaceId);
     return members.map((m) => ({
       id: m.id,
       userId: m.userId,
@@ -131,41 +137,41 @@ export class WorkspaceService {
     }));
   }
 
-  static async inviteMember(
+  async inviteMember(
     workspaceId: string,
     userId: string,
     dto: InviteMemberDto,
   ): Promise<WorkspaceMemberResponse> {
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
 
     // Check if inviter is a member with sufficient permissions
-    const inviterMember = await WorkspaceRepository.findMember(workspaceId, userId);
+    const inviterMember = await this.workspaceRepository.findMember(workspaceId, userId);
     if (!inviterMember) {
       throw new ForbiddenError('Not a member of this workspace');
     }
 
     // Find the user to invite
-    const invitee = await AuthRepository.findByEmail(dto.email);
+    const invitee = await this.authRepository.findByEmail(dto.email);
     if (!invitee) {
       throw new NotFoundError('User with this email');
     }
 
     // Check if already a member
-    const existingMember = await WorkspaceRepository.findMember(workspaceId, invitee.id);
+    const existingMember = await this.workspaceRepository.findMember(workspaceId, invitee.id);
     if (existingMember) {
       throw new ConflictError('User is already a member of this workspace');
     }
 
     // Validate role exists
-    const role = await RoleRepository.findById(dto.roleId);
+    const role = await this.roleRepository.findById(dto.roleId);
     if (!role) {
       throw new NotFoundError('Role');
     }
 
-    const member = await WorkspaceRepository.addMember({
+    const member = await this.workspaceRepository.addMember({
       workspaceId,
       userId: invitee.id,
       roleId: dto.roleId,
@@ -173,7 +179,7 @@ export class WorkspaceService {
       joinedAt: new Date(),
     });
 
-    const fullMember = await WorkspaceRepository.findMember(workspaceId, invitee.id);
+    const fullMember = await this.workspaceRepository.findMember(workspaceId, invitee.id);
 
     logger.info({ workspaceId, inviteeId: invitee.id }, 'Member invited');
 
@@ -204,13 +210,13 @@ export class WorkspaceService {
     };
   }
 
-  static async updateMemberRole(
+  async updateMemberRole(
     workspaceId: string,
     userId: string,
     targetUserId: string,
     dto: UpdateMemberRoleDto,
   ): Promise<WorkspaceMemberResponse> {
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
@@ -220,18 +226,18 @@ export class WorkspaceService {
       throw new ForbiddenError('Only the workspace owner can change member roles');
     }
 
-    const targetMember = await WorkspaceRepository.findMember(workspaceId, targetUserId);
+    const targetMember = await this.workspaceRepository.findMember(workspaceId, targetUserId);
     if (!targetMember) {
       throw new NotFoundError('Member');
     }
 
-    const role = await RoleRepository.findById(dto.roleId);
+    const role = await this.roleRepository.findById(dto.roleId);
     if (!role) {
       throw new NotFoundError('Role');
     }
 
-    const updated = await WorkspaceRepository.updateMemberRole(workspaceId, targetUserId, dto.roleId);
-    const fullMember = await WorkspaceRepository.findMember(workspaceId, targetUserId);
+    const updated = await this.workspaceRepository.updateMemberRole(workspaceId, targetUserId, dto.roleId);
+    const fullMember = await this.workspaceRepository.findMember(workspaceId, targetUserId);
 
     logger.info({ workspaceId, targetUserId, roleId: dto.roleId }, 'Member role updated');
 
@@ -256,12 +262,12 @@ export class WorkspaceService {
     };
   }
 
-  static async removeMember(
+  async removeMember(
     workspaceId: string,
     userId: string,
     targetUserId: string,
   ): Promise<void> {
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
@@ -276,23 +282,23 @@ export class WorkspaceService {
       throw new ForbiddenError('Only the workspace owner can remove other members');
     }
 
-    const targetMember = await WorkspaceRepository.findMember(workspaceId, targetUserId);
+    const targetMember = await this.workspaceRepository.findMember(workspaceId, targetUserId);
     if (!targetMember) {
       throw new NotFoundError('Member');
     }
 
-    await WorkspaceRepository.removeMember(workspaceId, targetUserId);
+    await this.workspaceRepository.removeMember(workspaceId, targetUserId);
     logger.info({ workspaceId, targetUserId }, 'Member removed');
 
     eventBus.emit(Events.WORKSPACE_MEMBER_REMOVED, { workspaceId, userId: targetUserId });
   }
 
-  static async transferOwnership(
+  async transferOwnership(
     workspaceId: string,
     userId: string,
     dto: TransferOwnershipDto,
   ): Promise<void> {
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
@@ -301,26 +307,26 @@ export class WorkspaceService {
       throw new ForbiddenError('Only the workspace owner can transfer ownership');
     }
 
-    const newOwnerMember = await WorkspaceRepository.findMember(workspaceId, dto.newOwnerId);
+    const newOwnerMember = await this.workspaceRepository.findMember(workspaceId, dto.newOwnerId);
     if (!newOwnerMember) {
       throw new NotFoundError('New owner must be a workspace member');
     }
 
     // Get the owner role
-    const ownerRole = await RoleRepository.findByName('Workspace Owner');
+    const ownerRole = await this.roleRepository.findByName('Workspace Owner');
     if (!ownerRole) {
       throw new NotFoundError('Owner role');
     }
 
     // Update workspace owner
-    await WorkspaceRepository.update(workspaceId, { ownerId: dto.newOwnerId });
+    await this.workspaceRepository.update(workspaceId, { ownerId: dto.newOwnerId });
 
     // Update roles: new owner gets Owner role, old owner gets Member role
-    const memberRole = await RoleRepository.findByName('Member');
+    const memberRole = await this.roleRepository.findByName('Member');
     if (memberRole) {
-      await WorkspaceRepository.updateMemberRole(workspaceId, userId, memberRole.id);
+      await this.workspaceRepository.updateMemberRole(workspaceId, userId, memberRole.id);
     }
-    await WorkspaceRepository.updateMemberRole(workspaceId, dto.newOwnerId, ownerRole.id);
+    await this.workspaceRepository.updateMemberRole(workspaceId, dto.newOwnerId, ownerRole.id);
 
     logger.info({ workspaceId, fromUserId: userId, toUserId: dto.newOwnerId }, 'Ownership transferred');
   }

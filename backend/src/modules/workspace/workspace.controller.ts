@@ -3,36 +3,38 @@ import { WorkspaceService } from '@/modules/workspace/workspace.service';
 import { successResponse } from '@/shared/dto/response.dto';
 
 export class WorkspaceController {
-  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+  constructor(private readonly workspaceService: WorkspaceService) {}
+
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await WorkspaceService.create(req.user!.userId, req.body);
+      const result = await this.workspaceService.create(req.user!.userId, req.body);
       res.status(201).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async listUserWorkspaces(req: Request, res: Response, next: NextFunction): Promise<void> {
+  listUserWorkspaces = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await WorkspaceService.listUserWorkspaces(req.user!.userId);
+      const result = await this.workspaceService.listUserWorkspaces(req.user!.userId);
       res.status(200).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await WorkspaceService.getById(req.params.workspaceId, req.user!.userId);
+      const result = await this.workspaceService.getById(req.params.workspaceId, req.user!.userId);
       res.status(200).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await WorkspaceService.update(
+      const result = await this.workspaceService.update(
         req.params.workspaceId,
         req.user!.userId,
         req.body,
@@ -41,29 +43,29 @@ export class WorkspaceController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+  delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await WorkspaceService.delete(req.params.workspaceId, req.user!.userId);
+      await this.workspaceService.delete(req.params.workspaceId, req.user!.userId);
       res.status(200).json(successResponse({ message: 'Workspace deleted successfully' }));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async listMembers(req: Request, res: Response, next: NextFunction): Promise<void> {
+  listMembers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await WorkspaceService.listMembers(req.params.workspaceId);
+      const result = await this.workspaceService.listMembers(req.params.workspaceId);
       res.status(200).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async inviteMember(req: Request, res: Response, next: NextFunction): Promise<void> {
+  inviteMember = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await WorkspaceService.inviteMember(
+      const result = await this.workspaceService.inviteMember(
         req.params.workspaceId,
         req.user!.userId,
         req.body,
@@ -72,11 +74,11 @@ export class WorkspaceController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async updateMemberRole(req: Request, res: Response, next: NextFunction): Promise<void> {
+  updateMemberRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await WorkspaceService.updateMemberRole(
+      const result = await this.workspaceService.updateMemberRole(
         req.params.workspaceId,
         req.user!.userId,
         req.params.memberId,
@@ -86,11 +88,11 @@ export class WorkspaceController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async removeMember(req: Request, res: Response, next: NextFunction): Promise<void> {
+  removeMember = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await WorkspaceService.removeMember(
+      await this.workspaceService.removeMember(
         req.params.workspaceId,
         req.user!.userId,
         req.params.memberId,
@@ -99,11 +101,11 @@ export class WorkspaceController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async transferOwnership(req: Request, res: Response, next: NextFunction): Promise<void> {
+  transferOwnership = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await WorkspaceService.transferOwnership(
+      await this.workspaceService.transferOwnership(
         req.params.workspaceId,
         req.user!.userId,
         req.body,
@@ -112,5 +114,5 @@ export class WorkspaceController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }

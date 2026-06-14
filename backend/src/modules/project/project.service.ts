@@ -12,14 +12,20 @@ import { logger } from '@/shared/logger/logger';
 import { createPaginatedResponse, PaginatedResult } from '@/shared/dto/pagination.dto';
 
 export class ProjectService {
-  static async create(userId: string, dto: CreateProjectDto): Promise<ProjectResponse> {
+  constructor(
+    private readonly projectRepository: ProjectRepository,
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly roleRepository: RoleRepository,
+  ) {}
+
+  async create(userId: string, dto: CreateProjectDto): Promise<ProjectResponse> {
     // Verify workspace exists and user is a member
-    const workspace = await WorkspaceRepository.findById(dto.workspaceId);
+    const workspace = await this.workspaceRepository.findById(dto.workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
 
-    const isMember = await WorkspaceRepository.isMember(dto.workspaceId, userId);
+    const isMember = await this.workspaceRepository.isMember(dto.workspaceId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this workspace');
     }
@@ -27,7 +33,7 @@ export class ProjectService {
     const key = dto.key || generateProjectKey(dto.name);
 
     // Check for duplicate key within workspace
-    const existing = await ProjectRepository.findByKeyAndWorkspace(key, dto.workspaceId);
+    const existing = await this.projectRepository.findByKeyAndWorkspace(key, dto.workspaceId);
     if (existing) {
       throw new ConflictError(`Project with key '${key}' already exists in this workspace`);
     }
@@ -35,12 +41,12 @@ export class ProjectService {
     const leadId = dto.leadId || userId;
 
     // Verify lead is a workspace member
-    const leadIsMember = await WorkspaceRepository.isMember(dto.workspaceId, leadId);
+    const leadIsMember = await this.workspaceRepository.isMember(dto.workspaceId, leadId);
     if (!leadIsMember) {
       throw new ForbiddenError('Lead must be a workspace member');
     }
 
-    const project = await ProjectRepository.create({
+    const project = await this.projectRepository.create({
       workspaceId: dto.workspaceId,
       name: dto.name,
       key: key.toUpperCase(),
@@ -49,9 +55,9 @@ export class ProjectService {
     });
 
     // Add lead as project member
-    const memberRole = await RoleRepository.findByName('Member');
+    const memberRole = await this.roleRepository.findByName('Member');
     if (memberRole) {
-      await ProjectRepository.addMember({
+      await this.projectRepository.addMember({
         projectId: project.id,
         userId: leadId,
         roleId: memberRole.id,
@@ -69,23 +75,23 @@ export class ProjectService {
     return toProjectResponse(project);
   }
 
-  static async listByWorkspace(
+  async listByWorkspace(
     workspaceId: string,
     userId: string,
     query: ListProjectsQuery,
   ): Promise<PaginatedResult<ProjectResponse>> {
     // Verify workspace exists and user is a member
-    const workspace = await WorkspaceRepository.findById(workspaceId);
+    const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError('Workspace');
     }
 
-    const isMember = await WorkspaceRepository.isMember(workspaceId, userId);
+    const isMember = await this.workspaceRepository.isMember(workspaceId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this workspace');
     }
 
-    const { projects, total } = await ProjectRepository.findByWorkspaceId(workspaceId, {
+    const { projects, total } = await this.projectRepository.findByWorkspaceId(workspaceId, {
       status: query.status,
       search: query.search,
       page: query.page,
@@ -97,13 +103,13 @@ export class ProjectService {
     return createPaginatedResponse(data, total, query.page, query.limit);
   }
 
-  static async getById(projectId: string, userId: string): Promise<ProjectResponse> {
-    const project = await ProjectRepository.findById(projectId);
+  async getById(projectId: string, userId: string): Promise<ProjectResponse> {
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
-    const isMember = await ProjectRepository.isMember(projectId, userId);
+    const isMember = await this.projectRepository.isMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
@@ -111,35 +117,35 @@ export class ProjectService {
     return toProjectResponse(project);
   }
 
-  static async update(
+  async update(
     projectId: string,
     userId: string,
     dto: UpdateProjectDto,
   ): Promise<ProjectResponse> {
-    const project = await ProjectRepository.findById(projectId);
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
-    const isMember = await ProjectRepository.isMember(projectId, userId);
+    const isMember = await this.projectRepository.isMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
     // Only project lead or workspace admin can update
     if (project.leadId !== userId) {
-      const member = await ProjectRepository.findMember(projectId, userId);
+      const member = await this.projectRepository.findMember(projectId, userId);
       if (!member || !member.role || member.role.level < 40) {
         throw new ForbiddenError('Only the project lead or higher can update project settings');
       }
     }
 
-    const updated = await ProjectRepository.update(projectId, dto);
+    const updated = await this.projectRepository.update(projectId, dto);
     return toProjectResponse(updated!);
   }
 
-  static async delete(projectId: string, userId: string): Promise<void> {
-    const project = await ProjectRepository.findById(projectId);
+  async delete(projectId: string, userId: string): Promise<void> {
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
@@ -148,22 +154,22 @@ export class ProjectService {
       throw new ForbiddenError('Only the project lead can delete the project');
     }
 
-    await ProjectRepository.delete(projectId);
+    await this.projectRepository.delete(projectId);
     logger.info({ projectId, userId }, 'Project deleted');
   }
 
-  static async listMembers(projectId: string, userId: string): Promise<ProjectMemberResponse[]> {
-    const project = await ProjectRepository.findById(projectId);
+  async listMembers(projectId: string, userId: string): Promise<ProjectMemberResponse[]> {
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
-    const isMember = await ProjectRepository.isMember(projectId, userId);
+    const isMember = await this.projectRepository.isMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    const members = await ProjectRepository.findMembers(projectId);
+    const members = await this.projectRepository.findMembers(projectId);
 
     return members.map((m) => ({
       id: m.id,
@@ -184,24 +190,24 @@ export class ProjectService {
     }));
   }
 
-  static async addMember(
+  async addMember(
     projectId: string,
     userId: string,
     dto: AddMemberDto,
   ): Promise<ProjectMemberResponse> {
-    const project = await ProjectRepository.findById(projectId);
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
     // Check if the user has permission to add members
-    const member = await ProjectRepository.findMember(projectId, userId);
+    const member = await this.projectRepository.findMember(projectId, userId);
     if (!member) {
       throw new ForbiddenError('Not a member of this project');
     }
 
     // Check if target user is a workspace member
-    const targetIsWorkspaceMember = await WorkspaceRepository.isMember(
+    const targetIsWorkspaceMember = await this.workspaceRepository.isMember(
       project.workspaceId,
       dto.userId,
     );
@@ -210,23 +216,23 @@ export class ProjectService {
     }
 
     // Check if already a member
-    const existingMember = await ProjectRepository.findMember(projectId, dto.userId);
+    const existingMember = await this.projectRepository.findMember(projectId, dto.userId);
     if (existingMember) {
       throw new ConflictError('User is already a member of this project');
     }
 
-    const role = await RoleRepository.findById(dto.roleId);
+    const role = await this.roleRepository.findById(dto.roleId);
     if (!role) {
       throw new NotFoundError('Role');
     }
 
-    const newMember = await ProjectRepository.addMember({
+    const newMember = await this.projectRepository.addMember({
       projectId,
       userId: dto.userId,
       roleId: dto.roleId,
     });
 
-    const fullMember = await ProjectRepository.findMember(projectId, dto.userId);
+    const fullMember = await this.projectRepository.findMember(projectId, dto.userId);
 
     logger.info({ projectId, userId: dto.userId }, 'Project member added');
 
@@ -255,12 +261,12 @@ export class ProjectService {
     };
   }
 
-  static async removeMember(
+  async removeMember(
     projectId: string,
     userId: string,
     targetUserId: string,
   ): Promise<void> {
-    const project = await ProjectRepository.findById(projectId);
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
@@ -270,12 +276,12 @@ export class ProjectService {
       throw new ForbiddenError('Only the project lead can remove members');
     }
 
-    const targetMember = await ProjectRepository.findMember(projectId, targetUserId);
+    const targetMember = await this.projectRepository.findMember(projectId, targetUserId);
     if (!targetMember) {
       throw new NotFoundError('Member');
     }
 
-    await ProjectRepository.removeMember(projectId, targetUserId);
+    await this.projectRepository.removeMember(projectId, targetUserId);
 
     logger.info({ projectId, targetUserId }, 'Project member removed');
 

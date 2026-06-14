@@ -1,32 +1,38 @@
-import { AppDataSource } from '@/config/database';
+import { DataSource, Repository } from 'typeorm';
 import { Project } from '@/modules/project/project.entity';
 import { ProjectMember } from '@/modules/project/project-member.entity';
 import { ProjectCounter } from '@/modules/project/project-counter.entity';
 import { IsNull } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-const projectRepository = AppDataSource.getRepository(Project);
-const projectMemberRepository = AppDataSource.getRepository(ProjectMember);
-const projectCounterRepository = AppDataSource.getRepository(ProjectCounter);
-
 export class ProjectRepository {
-  static async findById(id: string): Promise<Project | null> {
-    return projectRepository.findOne({
+  private readonly repo: Repository<Project>;
+  private readonly memberRepo: Repository<ProjectMember>;
+  private readonly counterRepo: Repository<ProjectCounter>;
+
+  constructor(private readonly dataSource: DataSource) {
+    this.repo = dataSource.getRepository(Project);
+    this.memberRepo = dataSource.getRepository(ProjectMember);
+    this.counterRepo = dataSource.getRepository(ProjectCounter);
+  }
+
+  async findById(id: string): Promise<Project | null> {
+    return this.repo.findOne({
       where: { id, deletedAt: IsNull() },
     });
   }
 
-  static async findByKeyAndWorkspace(key: string, workspaceId: string): Promise<Project | null> {
-    return projectRepository.findOne({
+  async findByKeyAndWorkspace(key: string, workspaceId: string): Promise<Project | null> {
+    return this.repo.findOne({
       where: { key: key.toUpperCase(), workspaceId, deletedAt: IsNull() },
     });
   }
 
-  static async findByWorkspaceId(
+  async findByWorkspaceId(
     workspaceId: string,
     options?: { status?: string; search?: string; page?: number; limit?: number },
   ): Promise<{ projects: Project[]; total: number }> {
-    const qb = projectRepository.createQueryBuilder('p')
+    const qb = this.repo.createQueryBuilder('p')
       .where('p.workspaceId = :workspaceId', { workspaceId })
       .andWhere('p.deletedAt IS NULL');
 
@@ -53,78 +59,78 @@ export class ProjectRepository {
     return { projects, total };
   }
 
-  static async create(data: Partial<Project>): Promise<Project> {
-    const project = projectRepository.create({
+  async create(data: Partial<Project>): Promise<Project> {
+    const project = this.repo.create({
       id: uuidv4(),
       ...data,
     });
-    return projectRepository.save(project);
+    return this.repo.save(project);
   }
 
-  static async update(id: string, data: Partial<Project>): Promise<Project | null> {
-    await projectRepository.update(id, data);
+  async update(id: string, data: Partial<Project>): Promise<Project | null> {
+    await this.repo.update(id, data);
     return this.findById(id);
   }
 
-  static async delete(id: string): Promise<void> {
-    await projectRepository.softDelete(id);
+  async delete(id: string): Promise<void> {
+    await this.repo.softDelete(id);
   }
 
   // Counter for sequential IDs
-  static async getNextSequentialId(projectId: string): Promise<number> {
-    let counter = await projectCounterRepository.findOne({
+  async getNextSequentialId(projectId: string): Promise<number> {
+    let counter = await this.counterRepo.findOne({
       where: { projectId },
     });
 
     if (!counter) {
-      counter = projectCounterRepository.create({
+      counter = this.counterRepo.create({
         projectId,
         lastSequentialId: 0,
       });
     }
 
     counter.lastSequentialId += 1;
-    await projectCounterRepository.save(counter);
+    await this.counterRepo.save(counter);
     return counter.lastSequentialId;
   }
 
   // Member operations
-  static async findMember(projectId: string, userId: string): Promise<ProjectMember | null> {
-    return projectMemberRepository.findOne({
+  async findMember(projectId: string, userId: string): Promise<ProjectMember | null> {
+    return this.memberRepo.findOne({
       where: { projectId, userId, deletedAt: IsNull() },
       relations: ['role', 'user'],
     });
   }
 
-  static async findMembers(projectId: string): Promise<ProjectMember[]> {
-    return projectMemberRepository.find({
+  async findMembers(projectId: string): Promise<ProjectMember[]> {
+    return this.memberRepo.find({
       where: { projectId, deletedAt: IsNull() },
       relations: ['role', 'user'],
       order: { createdAt: 'ASC' },
     });
   }
 
-  static async isMember(projectId: string, userId: string): Promise<boolean> {
-    const count = await projectMemberRepository.count({
+  async isMember(projectId: string, userId: string): Promise<boolean> {
+    const count = await this.memberRepo.count({
       where: { projectId, userId, deletedAt: IsNull() },
     });
     return count > 0;
   }
 
-  static async addMember(data: Partial<ProjectMember>): Promise<ProjectMember> {
-    const member = projectMemberRepository.create({
+  async addMember(data: Partial<ProjectMember>): Promise<ProjectMember> {
+    const member = this.memberRepo.create({
       id: uuidv4(),
       ...data,
     });
-    return projectMemberRepository.save(member);
+    return this.memberRepo.save(member);
   }
 
-  static async removeMember(projectId: string, userId: string): Promise<void> {
-    await projectMemberRepository.softDelete({ projectId, userId });
+  async removeMember(projectId: string, userId: string): Promise<void> {
+    await this.memberRepo.softDelete({ projectId, userId });
   }
 
-  static async countMembers(projectId: string): Promise<number> {
-    return projectMemberRepository.count({
+  async countMembers(projectId: string): Promise<number> {
+    return this.memberRepo.count({
       where: { projectId, deletedAt: IsNull() },
     });
   }

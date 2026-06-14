@@ -18,28 +18,33 @@ import { createPaginatedResponse, PaginatedResult } from '@/shared/dto/paginatio
 import { IsNull } from 'typeorm';
 
 export class TaskService {
-  static async create(userId: string, dto: CreateTaskDto): Promise<TaskResponse> {
+  constructor(
+    private readonly taskRepository: TaskRepository,
+    private readonly projectRepository: ProjectRepository,
+  ) {}
+
+  async create(userId: string, dto: CreateTaskDto): Promise<TaskResponse> {
     // Verify project exists and user is a member
-    const project = await ProjectRepository.findById(dto.projectId);
+    const project = await this.projectRepository.findById(dto.projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
-    const isMember = await ProjectRepository.isMember(dto.projectId, userId);
+    const isMember = await this.projectRepository.isMember(dto.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
     // Generate sequential ID
-    const sequentialId = await ProjectRepository.getNextSequentialId(dto.projectId);
+    const sequentialId = await this.projectRepository.getNextSequentialId(dto.projectId);
 
     // Get max position for the initial column
-    const maxPosition = await TaskRepository.getMaxPosition(
+    const maxPosition = await this.taskRepository.getMaxPosition(
       dto.projectId,
       dto.status || 'backlog',
     );
 
-    const task = await TaskRepository.create({
+    const task = await this.taskRepository.create({
       projectId: dto.projectId,
       title: dto.title,
       description: dto.description || null,
@@ -61,11 +66,11 @@ export class TaskService {
     // Add assignees
     if (dto.assigneeIds && dto.assigneeIds.length > 0) {
       for (const assigneeId of dto.assigneeIds) {
-        await TaskRepository.addAssignee(task.id, assigneeId);
+        await this.taskRepository.addAssignee(task.id, assigneeId);
       }
     }
 
-    const fullTask = await TaskRepository.findById(task.id);
+    const fullTask = await this.taskRepository.findById(task.id);
 
     logger.info({ taskId: task.id, projectId: dto.projectId }, 'Task created');
 
@@ -78,22 +83,22 @@ export class TaskService {
     return toTaskResponse(fullTask!, project.key);
   }
 
-  static async listByProject(
+  async listByProject(
     projectId: string,
     userId: string,
     query: ListTasksQuery,
   ): Promise<PaginatedResult<TaskResponse>> {
-    const project = await ProjectRepository.findById(projectId);
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
-    const isMember = await ProjectRepository.isMember(projectId, userId);
+    const isMember = await this.projectRepository.isMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    const { tasks, total } = await TaskRepository.findByProjectId(projectId, {
+    const { tasks, total } = await this.taskRepository.findByProjectId(projectId, {
       status: query.status,
       priority: query.priority,
       type: query.type,
@@ -111,39 +116,39 @@ export class TaskService {
     return createPaginatedResponse(data, total, query.page, query.limit);
   }
 
-  static async getById(taskId: string, userId: string): Promise<TaskResponse> {
-    const task = await TaskRepository.findById(taskId);
+  async getById(taskId: string, userId: string): Promise<TaskResponse> {
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    const project = await ProjectRepository.findById(task.projectId);
+    const project = await this.projectRepository.findById(task.projectId);
     return toTaskResponse(task, project?.key);
   }
 
-  static async update(
+  async update(
     taskId: string,
     userId: string,
     dto: UpdateTaskDto,
   ): Promise<TaskResponse> {
-    const task = await TaskRepository.findById(taskId);
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    const updated = await TaskRepository.update(taskId, dto);
+    const updated = await this.taskRepository.update(taskId, dto);
 
-    const project = await ProjectRepository.findById(task.projectId);
+    const project = await this.projectRepository.findById(task.projectId);
 
     logger.info({ taskId, userId }, 'Task updated');
 
@@ -156,18 +161,18 @@ export class TaskService {
     return toTaskResponse(updated!, project?.key);
   }
 
-  static async delete(taskId: string, userId: string): Promise<void> {
-    const task = await TaskRepository.findById(taskId);
+  async delete(taskId: string, userId: string): Promise<void> {
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    await TaskRepository.delete(taskId);
+    await this.taskRepository.delete(taskId);
 
     logger.info({ taskId, userId }, 'Task deleted');
 
@@ -178,17 +183,17 @@ export class TaskService {
     });
   }
 
-  static async changeStatus(
+  async changeStatus(
     taskId: string,
     userId: string,
     dto: ChangeStatusDto,
   ): Promise<TaskResponse> {
-    const task = await TaskRepository.findById(taskId);
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
@@ -201,12 +206,12 @@ export class TaskService {
       );
     }
 
-    const updated = await TaskRepository.update(taskId, {
+    const updated = await this.taskRepository.update(taskId, {
       status: dto.status,
       boardColumnId: dto.status,
     });
 
-    const project = await ProjectRepository.findById(task.projectId);
+    const project = await this.projectRepository.findById(task.projectId);
 
     logger.info({ taskId, fromStatus: task.status, toStatus: dto.status, userId }, 'Task status changed');
 
@@ -221,23 +226,23 @@ export class TaskService {
     return toTaskResponse(updated!, project?.key);
   }
 
-  static async assignUser(
+  async assignUser(
     taskId: string,
     userId: string,
     targetUserId: string,
   ): Promise<TaskAssigneeResponse> {
-    const task = await TaskRepository.findById(taskId);
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    const assignee = await TaskRepository.addAssignee(taskId, targetUserId);
-    const fullAssignee = await TaskRepository.findAssignee(taskId, targetUserId);
+    const assignee = await this.taskRepository.addAssignee(taskId, targetUserId);
+    const fullAssignee = await this.taskRepository.findAssignee(taskId, targetUserId);
 
     logger.info({ taskId, targetUserId }, 'User assigned to task');
 
@@ -261,22 +266,22 @@ export class TaskService {
     };
   }
 
-  static async removeAssignee(
+  async removeAssignee(
     taskId: string,
     userId: string,
     targetUserId: string,
   ): Promise<void> {
-    const task = await TaskRepository.findById(taskId);
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    await TaskRepository.removeAssignee(taskId, targetUserId);
+    await this.taskRepository.removeAssignee(taskId, targetUserId);
 
     logger.info({ taskId, targetUserId }, 'User unassigned from task');
 
@@ -288,18 +293,18 @@ export class TaskService {
     });
   }
 
-  static async addDependency(
+  async addDependency(
     taskId: string,
     userId: string,
     dependsOnTaskId: string,
     type: string = 'blocks',
   ): Promise<TaskDependencyResponse> {
-    const task = await TaskRepository.findById(taskId);
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const dependsOnTask = await TaskRepository.findByIdSimple(dependsOnTaskId);
+    const dependsOnTask = await this.taskRepository.findByIdSimple(dependsOnTaskId);
     if (!dependsOnTask) {
       throw new NotFoundError('Depends-on task');
     }
@@ -312,12 +317,12 @@ export class TaskService {
       throw new AppError('A task cannot depend on itself', 400, 'SELF_DEPENDENCY');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    const dependency = await TaskRepository.addDependency(taskId, dependsOnTaskId, type);
+    const dependency = await this.taskRepository.addDependency(taskId, dependsOnTaskId, type);
 
     return {
       id: dependency.id,
@@ -327,35 +332,35 @@ export class TaskService {
     };
   }
 
-  static async removeDependency(
+  async removeDependency(
     taskId: string,
     userId: string,
     dependsOnTaskId: string,
   ): Promise<void> {
-    const task = await TaskRepository.findById(taskId);
+    const task = await this.taskRepository.findById(taskId);
     if (!task) {
       throw new NotFoundError('Task');
     }
 
-    const isMember = await ProjectRepository.isMember(task.projectId, userId);
+    const isMember = await this.projectRepository.isMember(task.projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    await TaskRepository.removeDependency(taskId, dependsOnTaskId);
+    await this.taskRepository.removeDependency(taskId, dependsOnTaskId);
   }
 
-  static async batchUpdatePositions(
+  async batchUpdatePositions(
     projectId: string,
     userId: string,
     dto: BatchUpdatePositionsDto,
   ): Promise<void> {
-    const isMember = await ProjectRepository.isMember(projectId, userId);
+    const isMember = await this.projectRepository.isMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
-    await TaskRepository.batchUpdatePositions(dto.tasks);
+    await this.taskRepository.batchUpdatePositions(dto.tasks);
 
     logger.info({ projectId, taskCount: dto.tasks.length }, 'Batch position update');
   }

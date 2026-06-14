@@ -27,13 +27,18 @@ const DEFAULT_COLUMNS: Array<{ id: string; title: string }> = [
 ];
 
 export class KanbanService {
-  static async getBoard(projectId: string, userId: string): Promise<KanbanBoard> {
-    const project = await ProjectRepository.findById(projectId);
+  constructor(
+    private readonly taskRepository: TaskRepository,
+    private readonly projectRepository: ProjectRepository,
+  ) {}
+
+  async getBoard(projectId: string, userId: string): Promise<KanbanBoard> {
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
-    const isMember = await ProjectRepository.isMember(projectId, userId);
+    const isMember = await this.projectRepository.isMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
@@ -41,7 +46,7 @@ export class KanbanService {
     const columns: KanbanColumn[] = [];
 
     for (const col of DEFAULT_COLUMNS) {
-      const tasks = await TaskRepository.findByBoardColumn(projectId, col.id);
+      const tasks = await this.taskRepository.findByBoardColumn(projectId, col.id);
       columns.push({
         id: col.id,
         title: col.title,
@@ -52,24 +57,24 @@ export class KanbanService {
     return { columns };
   }
 
-  static async batchUpdatePositions(
+  async batchUpdatePositions(
     projectId: string,
     userId: string,
     dto: BatchUpdatePositionsDto,
   ): Promise<KanbanBoard> {
-    const project = await ProjectRepository.findById(projectId);
+    const project = await this.projectRepository.findById(projectId);
     if (!project) {
       throw new NotFoundError('Project');
     }
 
-    const isMember = await ProjectRepository.isMember(projectId, userId);
+    const isMember = await this.projectRepository.isMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenError('Not a member of this project');
     }
 
     // Validate all tasks belong to this project
     for (const item of dto.tasks) {
-      const task = await TaskRepository.findByIdSimple(item.taskId);
+      const task = await this.taskRepository.findByIdSimple(item.taskId);
       if (!task || task.projectId !== projectId) {
         throw new AppError(
           `Task ${item.taskId} does not belong to this project`,
@@ -80,7 +85,7 @@ export class KanbanService {
     }
 
     // Apply position updates
-    await TaskRepository.batchUpdatePositions(dto.tasks);
+    await this.taskRepository.batchUpdatePositions(dto.tasks);
 
     logger.info(
       { projectId, taskCount: dto.tasks.length },
@@ -92,7 +97,7 @@ export class KanbanService {
   }
 
   // Fractional indexing helpers
-  static calculateMoveWithinColumn(
+  calculateMoveWithinColumn(
     tasks: TaskResponse[],
     draggedTaskId: string,
     targetIndex: number,
@@ -115,7 +120,7 @@ export class KanbanService {
     return (prev + next) / 2;
   }
 
-  static calculateMoveAcrossColumn(
+  calculateMoveAcrossColumn(
     tasks: TaskResponse[],
     _draggedTaskId: string,
   ): number {
@@ -124,13 +129,13 @@ export class KanbanService {
     return maxPos + 10000;
   }
 
-  static needsRebalance(position: number): boolean {
+  needsRebalance(position: number): boolean {
     // Check if position is too close to another position (precision limit)
     return position < 0.001 || position > Number.MAX_SAFE_INTEGER / 2;
   }
 
-  static async rebalanceColumn(projectId: string, boardColumnId: string): Promise<void> {
-    const tasks = await TaskRepository.findByBoardColumn(projectId, boardColumnId);
+  async rebalanceColumn(projectId: string, boardColumnId: string): Promise<void> {
+    const tasks = await this.taskRepository.findByBoardColumn(projectId, boardColumnId);
 
     if (tasks.length <= 1) return;
 
@@ -140,7 +145,7 @@ export class KanbanService {
       boardColumnId,
     }));
 
-    await TaskRepository.batchUpdatePositions(updates);
+    await this.taskRepository.batchUpdatePositions(updates);
 
     logger.info(
       { projectId, boardColumnId, taskCount: tasks.length },

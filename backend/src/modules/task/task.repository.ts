@@ -1,29 +1,35 @@
-import { AppDataSource } from '@/config/database';
+import { DataSource, Repository } from 'typeorm';
 import { Task } from '@/modules/task/task.entity';
 import { TaskAssignee } from '@/modules/task/task-assignee.entity';
 import { TaskDependency } from '@/modules/task/task-dependency.entity';
 import { IsNull } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-const taskRepository = AppDataSource.getRepository(Task);
-const taskAssigneeRepository = AppDataSource.getRepository(TaskAssignee);
-const taskDependencyRepository = AppDataSource.getRepository(TaskDependency);
-
 export class TaskRepository {
-  static async findById(id: string): Promise<Task | null> {
-    return taskRepository.findOne({
+  private readonly repo: Repository<Task>;
+  private readonly assigneeRepo: Repository<TaskAssignee>;
+  private readonly dependencyRepo: Repository<TaskDependency>;
+
+  constructor(private readonly dataSource: DataSource) {
+    this.repo = dataSource.getRepository(Task);
+    this.assigneeRepo = dataSource.getRepository(TaskAssignee);
+    this.dependencyRepo = dataSource.getRepository(TaskDependency);
+  }
+
+  async findById(id: string): Promise<Task | null> {
+    return this.repo.findOne({
       where: { id, deletedAt: IsNull() },
       relations: ['assignees', 'assignees.user', 'project'],
     });
   }
 
-  static async findByIdSimple(id: string): Promise<Task | null> {
-    return taskRepository.findOne({
+  async findByIdSimple(id: string): Promise<Task | null> {
+    return this.repo.findOne({
       where: { id, deletedAt: IsNull() },
     });
   }
 
-  static async findByProjectId(
+  async findByProjectId(
     projectId: string,
     options?: {
       status?: string;
@@ -38,7 +44,7 @@ export class TaskRepository {
       sortOrder?: 'ASC' | 'DESC';
     },
   ): Promise<{ tasks: Task[]; total: number }> {
-    const qb = taskRepository
+    const qb = this.repo
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.assignees', 'ta', 'ta.taskId = t.id')
       .leftJoinAndSelect('ta.user', 'u', 'u.id = ta.userId')
@@ -88,11 +94,11 @@ export class TaskRepository {
     return { tasks, total };
   }
 
-  static async findByBoardColumn(
+  async findByBoardColumn(
     projectId: string,
     boardColumnId: string,
   ): Promise<Task[]> {
-    return taskRepository.find({
+    return this.repo.find({
       where: {
         projectId,
         boardColumnId,
@@ -103,35 +109,35 @@ export class TaskRepository {
     });
   }
 
-  static async findByParentTaskId(parentTaskId: string): Promise<Task[]> {
-    return taskRepository.find({
+  async findByParentTaskId(parentTaskId: string): Promise<Task[]> {
+    return this.repo.find({
       where: { parentTaskId, deletedAt: IsNull() },
       order: { position: 'ASC' },
     });
   }
 
-  static async create(data: Partial<Task>): Promise<Task> {
-    const task = taskRepository.create({
+  async create(data: Partial<Task>): Promise<Task> {
+    const task = this.repo.create({
       id: uuidv4(),
       ...data,
     });
-    return taskRepository.save(task);
+    return this.repo.save(task);
   }
 
-  static async update(id: string, data: Partial<Task>): Promise<Task | null> {
-    await taskRepository.update(id, data);
+  async update(id: string, data: Partial<Task>): Promise<Task | null> {
+    await this.repo.update(id, data);
     return this.findById(id);
   }
 
-  static async delete(id: string): Promise<void> {
-    await taskRepository.softDelete(id);
+  async delete(id: string): Promise<void> {
+    await this.repo.softDelete(id);
   }
 
   // Batch position update
-  static async batchUpdatePositions(
+  async batchUpdatePositions(
     updates: Array<{ taskId: string; position: number; boardColumnId: string }>,
   ): Promise<void> {
-    const queryRunner = AppDataSource.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
@@ -152,68 +158,68 @@ export class TaskRepository {
   }
 
   // Assignee operations
-  static async findAssignee(taskId: string, userId: string): Promise<TaskAssignee | null> {
-    return taskAssigneeRepository.findOne({
+  async findAssignee(taskId: string, userId: string): Promise<TaskAssignee | null> {
+    return this.assigneeRepo.findOne({
       where: { taskId, userId },
       relations: ['user'],
     });
   }
 
-  static async findAssignees(taskId: string): Promise<TaskAssignee[]> {
-    return taskAssigneeRepository.find({
+  async findAssignees(taskId: string): Promise<TaskAssignee[]> {
+    return this.assigneeRepo.find({
       where: { taskId },
       relations: ['user'],
       order: { createdAt: 'ASC' },
     });
   }
 
-  static async addAssignee(taskId: string, userId: string): Promise<TaskAssignee> {
+  async addAssignee(taskId: string, userId: string): Promise<TaskAssignee> {
     const existing = await this.findAssignee(taskId, userId);
     if (existing) {
       return existing;
     }
 
-    const assignee = taskAssigneeRepository.create({
+    const assignee = this.assigneeRepo.create({
       id: uuidv4(),
       taskId,
       userId,
     });
-    return taskAssigneeRepository.save(assignee);
+    return this.assigneeRepo.save(assignee);
   }
 
-  static async removeAssignee(taskId: string, userId: string): Promise<void> {
-    await taskAssigneeRepository.delete({ taskId, userId });
+  async removeAssignee(taskId: string, userId: string): Promise<void> {
+    await this.assigneeRepo.delete({ taskId, userId });
   }
 
-  static async clearAssignees(taskId: string): Promise<void> {
-    await taskAssigneeRepository.delete({ taskId });
+  async clearAssignees(taskId: string): Promise<void> {
+    await this.assigneeRepo.delete({ taskId });
   }
 
   // Dependency operations
-  static async findDependency(
+  async findDependency(
     taskId: string,
     dependsOnTaskId: string,
   ): Promise<TaskDependency | null> {
-    return taskDependencyRepository.findOne({
+    return this.dependencyRepo.findOne({
       where: { taskId, dependsOnTaskId },
     });
   }
 
-  static async findDependencies(taskId: string): Promise<TaskDependency[]> {
-    return taskDependencyRepository.find({
+  async findDependencies(taskId: string): Promise<TaskDependency[]> {
+    return this.dependencyRepo.find({
       where: { taskId },
       relations: ['dependsOnTask'],
     });
   }
 
-  static async findDependents(taskId: string): Promise<TaskDependency[]> {
-    return taskDependencyRepository.find({
+  async findDependents(taskId: string): Promise<TaskDependency[]> {
+    return this.dependencyRepo.find({
       where: { dependsOnTaskId: taskId },
       relations: ['task'],
     });
   }
 
-  static async addDependency(
+  async addDependency(
     taskId: string,
     dependsOnTaskId: string,
     type: string = 'blocks',
@@ -223,22 +229,22 @@ export class TaskRepository {
       return existing;
     }
 
-    const dependency = taskDependencyRepository.create({
+    const dependency = this.dependencyRepo.create({
       id: uuidv4(),
       taskId,
       dependsOnTaskId,
       type,
     });
-    return taskDependencyRepository.save(dependency);
+    return this.dependencyRepo.save(dependency);
   }
 
-  static async removeDependency(taskId: string, dependsOnTaskId: string): Promise<void> {
-    await taskDependencyRepository.delete({ taskId, dependsOnTaskId });
+  async removeDependency(taskId: string, dependsOnTaskId: string): Promise<void> {
+    await this.dependencyRepo.delete({ taskId, dependsOnTaskId });
   }
 
   // Get max position in a column
-  static async getMaxPosition(projectId: string, boardColumnId: string): Promise<number> {
-    const result = await taskRepository
+  async getMaxPosition(projectId: string, boardColumnId: string): Promise<number> {
+    const result = await this.repo
       .createQueryBuilder('t')
       .select('MAX(t.position)', 'maxPos')
       .where('t.projectId = :projectId', { projectId })

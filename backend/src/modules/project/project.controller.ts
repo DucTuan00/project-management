@@ -3,9 +3,11 @@ import { ProjectService } from '@/modules/project/project.service';
 import { successResponse } from '@/shared/dto/response.dto';
 
 export class ProjectController {
-  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+  constructor(private readonly projectService: ProjectService) {}
+
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await ProjectService.create(req.user!.userId, {
+      const result = await this.projectService.create(req.user!.userId, {
         ...req.body,
         workspaceId: req.params.workspaceId,
       });
@@ -13,11 +15,11 @@ export class ProjectController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async listByWorkspace(req: Request, res: Response, next: NextFunction): Promise<void> {
+  listByWorkspace = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await ProjectService.listByWorkspace(
+      const result = await this.projectService.listByWorkspace(
         req.params.workspaceId,
         req.user!.userId,
         req.query as any,
@@ -26,20 +28,20 @@ export class ProjectController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await ProjectService.getById(req.params.projectId, req.user!.userId);
+      const result = await this.projectService.getById(req.params.projectId, req.user!.userId);
       res.status(200).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await ProjectService.update(
+      const result = await this.projectService.update(
         req.params.projectId,
         req.user!.userId,
         req.body,
@@ -48,29 +50,29 @@ export class ProjectController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+  delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await ProjectService.delete(req.params.projectId, req.user!.userId);
+      await this.projectService.delete(req.params.projectId, req.user!.userId);
       res.status(200).json(successResponse({ message: 'Project deleted successfully' }));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async listMembers(req: Request, res: Response, next: NextFunction): Promise<void> {
+  listMembers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await ProjectService.listMembers(req.params.projectId, req.user!.userId);
+      const result = await this.projectService.listMembers(req.params.projectId, req.user!.userId);
       res.status(200).json(successResponse(result));
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async addMember(req: Request, res: Response, next: NextFunction): Promise<void> {
+  addMember = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await ProjectService.addMember(
+      const result = await this.projectService.addMember(
         req.params.projectId,
         req.user!.userId,
         req.body,
@@ -79,11 +81,11 @@ export class ProjectController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  static async removeMember(req: Request, res: Response, next: NextFunction): Promise<void> {
+  removeMember = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await ProjectService.removeMember(
+      await this.projectService.removeMember(
         req.params.projectId,
         req.user!.userId,
         req.params.memberId,
@@ -92,5 +94,5 @@ export class ProjectController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }

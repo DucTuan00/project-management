@@ -19,8 +19,10 @@ const REFRESH_TOKEN_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 const ACCESS_TOKEN_EXPIRY_SECONDS = 15 * 60; // 15 minutes
 
 export class AuthService {
-  static async register(dto: RegisterDto): Promise<AuthResponse> {
-    const existingUser = await AuthRepository.findByEmail(dto.email);
+  constructor(private readonly authRepository: AuthRepository) {}
+
+  async register(dto: RegisterDto): Promise<AuthResponse> {
+    const existingUser = await this.authRepository.findByEmail(dto.email);
     if (existingUser) {
       throw new ConflictError('Email already registered');
     }
@@ -29,7 +31,7 @@ export class AuthService {
     const verificationToken = generateVerificationToken();
     const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    const user = await AuthRepository.create({
+    const user = await this.authRepository.create({
       email: dto.email.toLowerCase(),
       passwordHash,
       displayName: dto.displayName,
@@ -40,7 +42,7 @@ export class AuthService {
 
     const tokens = this.generateTokens(user);
     const refreshTokenHash = await bcrypt.hash(tokens.refreshToken, SALT_ROUNDS);
-    await AuthRepository.update(user.id, { refreshTokenHash });
+    await this.authRepository.update(user.id, { refreshTokenHash });
 
     logger.info({ userId: user.id }, 'User registered successfully');
 
@@ -50,8 +52,8 @@ export class AuthService {
     };
   }
 
-  static async login(dto: LoginDto): Promise<AuthResponse> {
-    const user = await AuthRepository.findByEmail(dto.email);
+  async login(dto: LoginDto): Promise<AuthResponse> {
+    const user = await this.authRepository.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedError('Invalid email or password');
     }
@@ -61,11 +63,11 @@ export class AuthService {
       throw new UnauthorizedError('Invalid email or password');
     }
 
-    await AuthRepository.update(user.id, { lastLoginAt: new Date() });
+    await this.authRepository.update(user.id, { lastLoginAt: new Date() });
 
     const tokens = this.generateTokens(user);
     const refreshTokenHash = await bcrypt.hash(tokens.refreshToken, SALT_ROUNDS);
-    await AuthRepository.update(user.id, { refreshTokenHash });
+    await this.authRepository.update(user.id, { refreshTokenHash });
 
     logger.info({ userId: user.id }, 'User logged in successfully');
 
@@ -75,14 +77,14 @@ export class AuthService {
     };
   }
 
-  static async refresh(refreshToken: string): Promise<AuthTokens> {
+  async refresh(refreshToken: string): Promise<AuthTokens> {
     const payload = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as { userId: string; email: string };
 
     if (await isTokenBlacklisted(refreshToken)) {
       throw new UnauthorizedError('Refresh token has been revoked');
     }
 
-    const user = await AuthRepository.findById(payload.userId);
+    const user = await this.authRepository.findById(payload.userId);
     if (!user || !user.refreshTokenHash) {
       throw new UnauthorizedError('Invalid refresh token');
     }
@@ -103,12 +105,12 @@ export class AuthService {
 
     const tokens = this.generateTokens(user);
     const refreshTokenHash = await bcrypt.hash(tokens.refreshToken, SALT_ROUNDS);
-    await AuthRepository.update(user.id, { refreshTokenHash });
+    await this.authRepository.update(user.id, { refreshTokenHash });
 
     return tokens;
   }
 
-  static async logout(refreshToken: string): Promise<void> {
+  async logout(refreshToken: string): Promise<void> {
     try {
       const decoded = jwt.decode(refreshToken) as { exp: number };
       if (decoded && decoded.exp) {
@@ -119,14 +121,14 @@ export class AuthService {
       }
 
       const payload = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as { userId: string };
-      await AuthRepository.update(payload.userId, { refreshTokenHash: null });
+      await this.authRepository.update(payload.userId, { refreshTokenHash: null });
     } catch {
       // Token may be invalid/expired, but logout should still succeed
     }
   }
 
-  static async verifyEmail(token: string): Promise<void> {
-    const user = await AuthRepository.findByVerificationToken(token);
+  async verifyEmail(token: string): Promise<void> {
+    const user = await this.authRepository.findByVerificationToken(token);
     if (!user) {
       throw new NotFoundError('Invalid verification token');
     }
@@ -135,7 +137,7 @@ export class AuthService {
       throw new AppError('Verification token has expired', 400, 'TOKEN_EXPIRED');
     }
 
-    await AuthRepository.update(user.id, {
+    await this.authRepository.update(user.id, {
       isEmailVerified: true,
       emailVerifiedAt: new Date(),
       verificationToken: null,
@@ -145,8 +147,8 @@ export class AuthService {
     logger.info({ userId: user.id }, 'Email verified successfully');
   }
 
-  static async resendVerification(email: string): Promise<void> {
-    const user = await AuthRepository.findByEmail(email);
+  async resendVerification(email: string): Promise<void> {
+    const user = await this.authRepository.findByEmail(email);
     if (!user) {
       // Don't reveal if email exists
       return;
@@ -159,7 +161,7 @@ export class AuthService {
     const verificationToken = generateVerificationToken();
     const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await AuthRepository.update(user.id, {
+    await this.authRepository.update(user.id, {
       verificationToken,
       verificationTokenExpires,
     });
@@ -168,8 +170,8 @@ export class AuthService {
     // TODO: Send email via BullMQ job
   }
 
-  static async forgotPassword(email: string): Promise<void> {
-    const user = await AuthRepository.findByEmail(email);
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.authRepository.findByEmail(email);
     if (!user) {
       // Don't reveal if email exists
       return;
@@ -178,7 +180,7 @@ export class AuthService {
     const resetToken = generateVerificationToken();
     const passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    await AuthRepository.update(user.id, {
+    await this.authRepository.update(user.id, {
       passwordResetToken: resetToken,
       passwordResetExpires,
     });
@@ -187,8 +189,8 @@ export class AuthService {
     // TODO: Send email via BullMQ job
   }
 
-  static async resetPassword(dto: ResetPasswordDto): Promise<void> {
-    const user = await AuthRepository.findByPasswordResetToken(dto.token);
+  async resetPassword(dto: ResetPasswordDto): Promise<void> {
+    const user = await this.authRepository.findByPasswordResetToken(dto.token);
     if (!user) {
       throw new NotFoundError('Invalid reset token');
     }
@@ -199,7 +201,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.newPassword, SALT_ROUNDS);
 
-    await AuthRepository.update(user.id, {
+    await this.authRepository.update(user.id, {
       passwordHash,
       passwordResetToken: null,
       passwordResetExpires: null,
@@ -209,15 +211,15 @@ export class AuthService {
     logger.info({ userId: user.id }, 'Password reset successfully');
   }
 
-  static async getMe(userId: string): Promise<UserPayload> {
-    const user = await AuthRepository.findById(userId);
+  async getMe(userId: string): Promise<UserPayload> {
+    const user = await this.authRepository.findById(userId);
     if (!user) {
       throw new NotFoundError('User');
     }
     return this.sanitizeUser(user);
   }
 
-  private static generateTokens(user: User): AuthTokens {
+  private generateTokens(user: User): AuthTokens {
     const payload = { userId: user.id, email: user.email };
 
     const accessToken = jwt.sign(payload, env.JWT_ACCESS_SECRET, {
@@ -231,7 +233,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  private static sanitizeUser(user: User): UserPayload {
+  private sanitizeUser(user: User): UserPayload {
     return {
       id: user.id,
       email: user.email,
