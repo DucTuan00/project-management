@@ -12,6 +12,13 @@ import {
   ChevronRight,
   Home,
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -45,71 +52,140 @@ export function Sidebar({ workspaceId }: SidebarProps) {
   };
 
   return (
-    <aside
-      className={cn(
-        'flex h-screen flex-col border-r border-gray-200 bg-white transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
-      )}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        width: collapsed ? '64px' : '256px',
+        backgroundColor: '#fffefb',
+        borderRight: '1px solid #c5c0b1',
+        transition: 'width 0.3s ease',
+        overflow: 'hidden',
+      }}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: '64px',
+          px: 2,
+          borderBottom: '1px solid #c5c0b1',
+        }}
+      >
         {!collapsed && (
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
-              <Home className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-lg font-bold text-gray-900">PM Platform</span>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '32px',
+                height: '32px',
+                borderRadius: '12px',
+                backgroundColor: '#ff4f00',
+              }}
+            >
+              <Home style={{ color: '#fffefb', fontSize: '20px' }} />
+            </Box>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: '#201515',
+                fontSize: '18px',
+              }}
+            >
+              PM Platform
+            </Typography>
           </Link>
         )}
-        <button
+        <IconButton
           onClick={() => setCollapsed(!collapsed)}
-          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+          sx={{
+            color: '#939084',
+            '&:hover': {
+              backgroundColor: '#f8f4f0',
+              color: '#605d52',
+            },
+          }}
         >
-          {collapsed ? (
-            <ChevronRight className="h-5 w-5" />
-          ) : (
-            <ChevronLeft className="h-5 w-5" />
-          )}
-        </button>
-      </div>
+          {collapsed ? <ChevronRight /> : <ChevronLeft />}
+        </IconButton>
+      </Box>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-1">
-          {navigation.map((item) => {
-            const href = getHref(item);
-            const isActive =
-              pathname === href || pathname.startsWith(href + '/');
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
+          px: 1.5,
+          py: 2,
+        }}
+      >
+        {navigation.map((item) => {
+          const href = getHref(item);
+          const isActive = pathname === href || pathname.startsWith(href + '/');
 
-            return (
-              <li key={item.name}>
-                <Link
-                  href={href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                  )}
-                  title={collapsed ? item.name : undefined}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  {!collapsed && <span>{item.name}</span>}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+          return (
+            <ListItemButton
+              key={item.name}
+              component={Link}
+              href={href}
+              title={collapsed ? item.name : undefined}
+              sx={{
+                borderRadius: '12px',
+                mb: 0.5,
+                px: 1.5,
+                py: 1,
+                backgroundColor: isActive ? '#fff7ed' : 'transparent',
+                color: isActive ? '#ff4f00' : '#605d52',
+                '&:hover': {
+                  backgroundColor: isActive ? '#fff7ed' : '#f8f4f0',
+                  color: isActive ? '#ff4f00' : '#201515',
+                },
+                '& .MuiListItemIcon-root': {
+                  color: isActive ? '#ff4f00' : '#939084',
+                  minWidth: '40px',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: '40px' }}>
+                <item.icon style={{ fontSize: '20px' }} />
+              </ListItemIcon>
+              {!collapsed && (
+                <ListItemText
+                  primary={item.name}
+                  primaryTypographyProps={{
+                    fontSize: '14px',
+                    fontWeight: 500,
+                  }}
+                />
+              )}
+            </ListItemButton>
+          );
+        })}
+      </Box>
 
       {/* Footer */}
-      <div className="border-t border-gray-200 p-4">
+      <Divider sx={{ borderColor: '#c5c0b1' }} />
+      <Box sx={{ p: 2 }}>
         {!collapsed && (
-          <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-xs text-gray-500">Version 0.1.0</p>
-          </div>
+          <Box
+            sx={{
+              borderRadius: '12px',
+              backgroundColor: '#f8f4f0',
+              p: 1.5,
+            }}
+          >
+            <Typography variant="caption" sx={{ color: '#939084' }}>
+              Version 0.1.0
+            </Typography>
+          </Box>
         )}
-      </div>
-    </aside>
+      </Box>
+    </Box>
   );
 }

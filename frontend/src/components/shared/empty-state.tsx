@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { Inbox } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -24,24 +26,58 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center justify-center py-12 text-center',
-        className
-      )}
+    <Box
+      className={cn(className)}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 6,
+        textAlign: 'center',
+      }}
     >
-      <div className="rounded-full bg-gray-100 p-4 mb-4">
-        {icon || <Inbox className="h-8 w-8 text-gray-400" />}
-      </div>
-      <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+      <Box
+        sx={{
+          borderRadius: '50%',
+          backgroundColor: '#f8f4f0',
+          p: 2.5,
+          mb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {icon || <Inbox sx={{ fontSize: '32px', color: '#939084' }} />}
+      </Box>
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: 500,
+          color: '#201515',
+          fontSize: '18px',
+        }}
+      >
+        {title}
+      </Typography>
       {description && (
-        <p className="mt-1 text-sm text-gray-500 max-w-sm">{description}</p>
+        <Typography
+          variant="body2"
+          sx={{
+            mt: 0.5,
+            color: '#939084',
+            fontSize: '14px',
+            maxWidth: '400px',
+          }}
+        >
+          {description}
+        </Typography>
       )}
       {action && (
-        <div className="mt-4">
+        <Box sx={{ mt: 3 }}>
           <Button onClick={action.onClick}>{action.label}</Button>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

@@ -3,6 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Check, ChevronsUpDown, Plus, Building2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import { cn } from '@/lib/utils';
 import { useWorkspaces } from '@/modules/workspace/queries';
 
@@ -19,84 +23,228 @@ export function WorkspaceSwitcher({ currentWorkspaceId }: WorkspaceSwitcherProps
   );
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
-          <Building2 className="h-5 w-5 text-primary-600" />
-        </div>
-        <div className="flex-1 text-left">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            {currentWorkspace?.name || 'Select Workspace'}
-          </p>
-          <p className="text-xs text-gray-500 truncate">
-            {currentWorkspace?.description || 'No workspace selected'}
-          </p>
-        </div>
-        <ChevronsUpDown className="h-4 w-4 text-gray-400" />
-      </button>
+    <ClickAwayListener onClickAway={() => setIsOpen(false)}>
+      <Box sx={{ position: 'relative' }}>
+        <Box
+          onClick={() => setIsOpen(!isOpen)}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            width: '100%',
+            borderRadius: '12px',
+            border: '1px solid #c5c0b1',
+            backgroundColor: '#fffefb',
+            p: 1.5,
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: '#f8f4f0',
+            },
+            transition: 'background-color 0.2s',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              borderRadius: '12px',
+              backgroundColor: '#fff7ed',
+            }}
+          >
+            <Building2 sx={{ color: '#ff4f00', fontSize: '20px' }} />
+          </Box>
+          <Box sx={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 500,
+                color: '#201515',
+                fontSize: '14px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {currentWorkspace?.name || 'Select Workspace'}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: '#939084',
+                fontSize: '12px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {currentWorkspace?.description || 'No workspace selected'}
+            </Typography>
+          </Box>
+          <ChevronsUpDown style={{ color: '#939084', fontSize: '18px' }} />
+        </Box>
 
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-lg border border-gray-200 bg-white shadow-lg">
-            <div className="p-2">
-              <p className="px-3 py-2 text-xs font-medium text-gray-500 uppercase">
+        {isOpen && (
+          <Paper
+            elevation={0}
+            sx={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: '100%',
+              zIndex: 50,
+              mt: 1,
+              borderRadius: '12px',
+              border: '1px solid #c5c0b1',
+              backgroundColor: '#fffefb',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <Box sx={{ p: 1 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  px: 1.5,
+                  py: 1,
+                  display: 'block',
+                  fontWeight: 500,
+                  color: '#939084',
+                  fontSize: '12px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
                 Workspaces
-              </p>
+              </Typography>
               {isLoading ? (
-                <div className="px-3 py-4 text-center text-sm text-gray-500">
-                  Loading...
-                </div>
+                <Box sx={{ px: 1.5, py: 2, textAlign: 'center' }}>
+                  <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
+                    Loading...
+                  </Typography>
+                </Box>
               ) : (
-                <ul className="space-y-1">
+                <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
                   {workspaces?.map((workspace) => (
-                    <li key={workspace.id}>
+                    <Box component="li" key={workspace.id}>
                       <Link
                         href={`/workspace/${workspace.id}`}
-                        className={cn(
-                          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                          workspace.id === currentWorkspaceId
-                            ? 'bg-primary-50 text-primary-700'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        )}
                         onClick={() => setIsOpen(false)}
+                        style={{ textDecoration: 'none' }}
                       >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100">
-                          <Building2 className="h-4 w-4 text-primary-600" />
-                        </div>
-                        <div className="flex-1 truncate">
-                          <p className="font-medium">{workspace.name}</p>
-                        </div>
-                        {workspace.id === currentWorkspaceId && (
-                          <Check className="h-4 w-4 text-primary-600" />
-                        )}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            borderRadius: '12px',
+                            px: 1.5,
+                            py: 1,
+                            backgroundColor:
+                              workspace.id === currentWorkspaceId
+                                ? '#fff7ed'
+                                : 'transparent',
+                            color:
+                              workspace.id === currentWorkspaceId
+                                ? '#ff4f00'
+                                : '#605d52',
+                            '&:hover': {
+                              backgroundColor:
+                                workspace.id === currentWorkspaceId
+                                  ? '#fff7ed'
+                                  : '#f8f4f0',
+                            },
+                            transition: 'background-color 0.2s',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '12px',
+                              backgroundColor: '#fff7ed',
+                            }}
+                          >
+                            <Building2 sx={{ color: '#ff4f00', fontSize: '16px' }} />
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {workspace.name}
+                            </Typography>
+                          </Box>
+                          {workspace.id === currentWorkspaceId && (
+                            <Check style={{ color: '#ff4f00', fontSize: '16px' }} />
+                          )}
+                        </Box>
                       </Link>
-                    </li>
+                    </Box>
                   ))}
-                </ul>
+                </Box>
               )}
-              <div className="border-t border-gray-200 mt-2 pt-2">
+              <Box
+                sx={{
+                  borderTop: '1px solid #c5c0b1',
+                  mt: 1,
+                  pt: 1,
+                }}
+              >
                 <Link
                   href="/workspace/new"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   onClick={() => setIsOpen(false)}
+                  style={{ textDecoration: 'none' }}
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
-                    <Plus className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <span>Create Workspace</span>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      borderRadius: '12px',
+                      px: 1.5,
+                      py: 1,
+                      color: '#605d52',
+                      '&:hover': {
+                        backgroundColor: '#f8f4f0',
+                      },
+                      transition: 'background-color 0.2s',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '12px',
+                        border: '2px dashed #c5c0b1',
+                      }}
+                    >
+                      <Plus style={{ color: '#939084', fontSize: '16px' }} />
+                    </Box>
+                    <Typography variant="body2" sx={{ fontSize: '14px' }}>
+                      Create Workspace
+                    </Typography>
+                  </Box>
                 </Link>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+              </Box>
+            </Box>
+          </Paper>
+        )}
+      </Box>
+    </ClickAwayListener>
   );
 }

@@ -4,17 +4,28 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: #fffefb;
+    --foreground: #201515;
+    --canvas: #fffefb;
+    --canvas-soft: #f8f4f0;
+    --ink: #201515;
+    --ink-soft: #2f2a26;
+    --ink-mid: #36342e;
+    --body: #605d52;
+    --body-mid: #939084;
+    --mute: #c5c0b1;
+    --primary: #ff4f00;
+    --primary-light: #ff7a3d;
+    --primary-dark: #cc3f00;
   }
 }
 
 @layer base {
   * {
-    @apply border-gray-200;
+    @apply border-mute;
   }
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-canvas text-ink antialiased;
   }
 }
 
@@ -38,32 +49,28 @@
   }
 }
 
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out;
-}
-
 @layer utilities {
   .animate-slide-in {
     animation: slide-in 0.3s ease-out;
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - warm tones */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f8f4f0;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #c5c0b1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: #939084;
 }

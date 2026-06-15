@@ -4,6 +4,8 @@ import React, { useState, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Send, X } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { useCreateComment } from '../queries';
 import { createCommentSchema, CreateCommentFormData } from '../schemas';
@@ -76,13 +78,27 @@ export function CommentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-      <div className="relative">
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+    >
+      <Box>
         <textarea
           {...register('content')}
           placeholder={placeholder}
           rows={parentId ? 2 : 3}
-          className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
+          style={{
+            width: '100%',
+            borderRadius: '6px',
+            border: '1px solid #c5c0b1',
+            padding: '12px 16px',
+            fontSize: '14px',
+            color: '#201515',
+            backgroundColor: '#fffefb',
+            resize: 'none',
+            outline: 'none',
+          }}
           onFocus={() => setIsFocused(true)}
           onChange={(e) => {
             register('content').onChange(e);
@@ -90,15 +106,17 @@ export function CommentForm({
           }}
         />
         {errors.content && (
-          <p className="mt-1 text-xs text-danger-600">{errors.content.message}</p>
+          <Typography variant="caption" sx={{ color: '#dc2626', mt: 0.5, display: 'block', fontSize: '12px' }}>
+            {errors.content.message}
+          </Typography>
         )}
-      </div>
+      </Box>
 
       {(isFocused || parentId) && (
-        <div className="flex items-center justify-end gap-2">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
           {onCancel && (
             <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-              <X className="h-4 w-4 mr-1" />
+              <X size={16} style={{ marginRight: '4px' }} />
               Cancel
             </Button>
           )}
@@ -108,11 +126,11 @@ export function CommentForm({
             loading={createComment.isPending}
             disabled={!content?.trim()}
           >
-            <Send className="h-4 w-4 mr-1" />
+            <Send size={16} style={{ marginRight: '4px' }} />
             {parentId ? 'Reply' : 'Comment'}
           </Button>
-        </div>
+        </Box>
       )}
-    </form>
+    </Box>
   );
 }

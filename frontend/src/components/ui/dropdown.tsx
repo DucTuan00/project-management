@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import MuiMenu from '@mui/material/Menu';
+import MuiMenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import { cn } from '@/lib/utils';
 
 export interface DropdownItem {
@@ -25,7 +29,7 @@ export function Dropdown({
   className,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
   const close = useCallback(() => setIsOpen(false), []);
@@ -33,8 +37,8 @@ export function Dropdown({
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        anchorRef.current &&
+        !anchorRef.current.contains(event.target as Node)
       ) {
         close();
       }
@@ -44,57 +48,79 @@ export function Dropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [close]);
 
-  useEffect(() => {
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        close();
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [isOpen, close]);
-
   return (
-    <div ref={dropdownRef} className="relative inline-block">
+    <div ref={anchorRef} className="relative inline-block">
       <div onClick={toggle} className="cursor-pointer">
         {trigger}
       </div>
 
-      {isOpen && (
-        <div
-          className={cn(
-            'absolute z-50 mt-2 min-w-[180px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg',
-            align === 'right' ? 'right-0' : 'left-0',
-            className
-          )}
-        >
-          {items.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                if (!item.disabled) {
-                  item.onClick();
-                  close();
-                }
+      <MuiMenu
+        anchorEl={anchorRef.current}
+        open={isOpen}
+        onClose={close}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: align === 'right' ? 'right' : 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: align === 'right' ? 'right' : 'left',
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '12px',
+              border: '1px solid #c5c0b1',
+              backgroundColor: '#fffefb',
+              minWidth: '180px',
+              mt: 1,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            },
+          },
+        }}
+      >
+        {items.map((item, index) => (
+          <MuiMenuItem
+            key={index}
+            onClick={() => {
+              if (!item.disabled) {
+                item.onClick();
+                close();
+              }
+            }}
+            disabled={item.disabled}
+            sx={{
+              ...(item.danger && {
+                color: '#dc2626',
+                '&:hover': {
+                  backgroundColor: '#fee2e2',
+                },
+              }),
+              ...(!item.danger && {
+                color: '#605d52',
+                '&:hover': {
+                  backgroundColor: '#f8f4f0',
+                },
+              }),
+              py: 1,
+              px: 2,
+            }}
+          >
+            {item.icon && (
+              <ListItemIcon sx={{ minWidth: 'auto', mr: 1.5 }}>
+                {item.icon}
+              </ListItemIcon>
+            )}
+            <ListItemText
+              primary={item.label}
+              primaryTypographyProps={{
+                fontSize: '14px',
+                fontWeight: 500,
               }}
-              disabled={item.disabled}
-              className={cn(
-                'flex w-full items-center gap-2 px-4 py-2 text-sm text-left transition-colors',
-                item.danger
-                  ? 'text-danger-600 hover:bg-danger-50'
-                  : 'text-gray-700 hover:bg-gray-50',
-                item.disabled && 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
+            />
+          </MuiMenuItem>
+        ))}
+      </MuiMenu>
     </div>
   );
 }

@@ -5,16 +5,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Calendar,
-  Tag,
-  User,
-  Clock,
   Trash2,
   Edit2,
   X,
   Check,
-  MessageSquare,
-  Paperclip,
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
@@ -26,13 +24,11 @@ import { updateTaskSchema, UpdateTaskFormData } from '../schemas';
 import { CommentThread } from '@/modules/comment/components/comment-thread';
 import { AttachmentList } from '@/modules/attachment/components/attachment-list';
 import {
-  STATUS_COLORS,
   PRIORITY_COLORS,
   TYPE_COLORS,
   STATUS_LABELS,
   PRIORITY_LABELS,
   TYPE_LABELS,
-  TASK_STATUSES,
   TASK_PRIORITIES,
   TASK_TYPES,
 } from '@/lib/constants';
@@ -105,11 +101,24 @@ export function TaskDetail({ task, projectKey, members = [] }: TaskDetailProps) 
 
   if (isEditing) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Edit Task</h2>
-            <div className="flex items-center gap-2">
+      <Box
+        sx={{
+          borderRadius: '12px',
+          border: '1px solid #c5c0b1',
+          backgroundColor: '#fffefb',
+          p: 3,
+        }}
+      >
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#201515', fontSize: '18px' }}>
+              Edit Task
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Button
                 type="button"
                 variant="ghost"
@@ -118,24 +127,40 @@ export function TaskDetail({ task, projectKey, members = [] }: TaskDetailProps) 
                   reset();
                 }}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X size={16} style={{ marginRight: '4px' }} />
                 Cancel
               </Button>
               <Button type="submit" loading={updateTask.isPending}>
-                <Check className="h-4 w-4 mr-2" />
+                <Check size={16} style={{ marginRight: '4px' }} />
                 Save
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="space-y-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <input
               {...register('title')}
-              className="w-full text-xl font-semibold text-gray-900 border-0 border-b border-gray-200 focus:border-primary-500 focus:ring-0 pb-2"
+              style={{
+                width: '100%',
+                fontSize: '20px',
+                fontWeight: 600,
+                color: '#201515',
+                border: 'none',
+                borderBottom: '1px solid #c5c0b1',
+                paddingBottom: '8px',
+                outline: 'none',
+                backgroundColor: 'transparent',
+              }}
               placeholder="Task title"
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                gap: 2,
+              }}
+            >
               <Select
                 label="Status"
                 options={Object.entries(STATUS_LABELS).map(([value, label]) => ({
@@ -182,73 +207,115 @@ export function TaskDetail({ task, projectKey, members = [] }: TaskDetailProps) 
               <input
                 type="number"
                 {...register('storyPoints', { valueAsNumber: true })}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #c5c0b1',
+                  fontSize: '14px',
+                  backgroundColor: '#fffefb',
+                }}
                 placeholder="Story Points"
               />
 
               <input
                 type="date"
                 {...register('dueDate')}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #c5c0b1',
+                  fontSize: '14px',
+                  backgroundColor: '#fffefb',
+                }}
               />
-            </div>
+            </Box>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500, color: '#605d52', mb: 0.5, fontSize: '14px' }}>
                 Description
-              </label>
+              </Typography>
               <textarea
                 {...register('description')}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm min-h-[150px]"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #c5c0b1',
+                  fontSize: '14px',
+                  minHeight: '150px',
+                  backgroundColor: '#fffefb',
+                }}
                 placeholder="Add a description..."
               />
-            </div>
-          </div>
-        </form>
-      </div>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">
+    <Box
+      sx={{
+        borderRadius: '12px',
+        border: '1px solid #c5c0b1',
+        backgroundColor: '#fffefb',
+        p: 3,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
               {projectKey}-{task.id.slice(-4).toUpperCase()}
-            </span>
+            </Typography>
             <Badge className={TYPE_COLORS[task.type]}>{TYPE_LABELS[task.type]}</Badge>
-          </div>
-          <h2 className="mt-2 text-xl font-semibold text-gray-900">{task.title}</h2>
-        </div>
+          </Box>
+          <Typography variant="h5" sx={{ mt: 1, fontWeight: 600, color: '#201515', fontSize: '20px' }}>
+            {task.title}
+          </Typography>
+        </Box>
 
-        <div className="flex items-center gap-2">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Button variant="ghost" onClick={() => setIsEditing(true)}>
-            <Edit2 className="h-4 w-4 mr-2" />
+            <Edit2 size={16} style={{ marginRight: '4px' }} />
             Edit
           </Button>
           <Button variant="danger" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 size={16} style={{ marginRight: '4px' }} />
             Delete
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-6">
+      <Box
+        sx={{
+          mt: 3,
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
+          gap: 3,
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Description */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Description</h3>
-            <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#939084', fontSize: '14px' }}>
+              Description
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1, color: '#605d52', whiteSpace: 'pre-wrap', fontSize: '14px' }}>
               {task.description || 'No description provided.'}
-            </p>
-          </div>
-        </div>
+            </Typography>
+          </Box>
+        </Box>
 
-        <div className="space-y-4">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Status */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Status</h3>
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#939084', mb: 1, fontSize: '14px' }}>
+              Status
+            </Typography>
             <Select
               options={Object.entries(STATUS_LABELS).map(([value, label]) => ({
                 value,
@@ -257,93 +324,115 @@ export function TaskDetail({ task, projectKey, members = [] }: TaskDetailProps) 
               value={task.status}
               onChange={handleStatusChange}
             />
-          </div>
+          </Box>
 
           {/* Priority */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Priority</h3>
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#939084', mb: 1, fontSize: '14px' }}>
+              Priority
+            </Typography>
             <Badge className={PRIORITY_COLORS[task.priority]}>
               {PRIORITY_LABELS[task.priority]}
             </Badge>
-          </div>
+          </Box>
 
           {/* Assignee */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Assignee</h3>
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#939084', mb: 1, fontSize: '14px' }}>
+              Assignee
+            </Typography>
             {task.assignee ? (
-              <div className="flex items-center gap-2">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Avatar
                   src={task.assignee.avatar}
                   name={task.assignee.name}
                   size="sm"
                 />
-                <span className="text-sm text-gray-700">{task.assignee.name}</span>
-              </div>
+                <Typography variant="body2" sx={{ color: '#605d52', fontSize: '14px' }}>
+                  {task.assignee.name}
+                </Typography>
+              </Box>
             ) : (
-              <span className="text-sm text-gray-400">Unassigned</span>
+              <Typography variant="body2" sx={{ color: '#c5c0b1', fontSize: '14px' }}>
+                Unassigned
+              </Typography>
             )}
-          </div>
+          </Box>
 
           {/* Due Date */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Due Date</h3>
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#939084', mb: 1, fontSize: '14px' }}>
+              Due Date
+            </Typography>
             {task.dueDate ? (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-400" />
-                <span
-                  className={cn(
-                    'text-sm',
-                    new Date(task.dueDate) < new Date() && task.status !== 'done'
-                      ? 'text-danger-600'
-                      : 'text-gray-700'
-                  )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Calendar style={{ fontSize: '16px', color: '#939084' }} />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: new Date(task.dueDate) < new Date() && task.status !== 'done'
+                      ? '#dc2626'
+                      : '#605d52',
+                    fontSize: '14px',
+                  }}
                 >
                   {formatDate(task.dueDate)}
-                </span>
-              </div>
+                </Typography>
+              </Box>
             ) : (
-              <span className="text-sm text-gray-400">No due date</span>
+              <Typography variant="body2" sx={{ color: '#c5c0b1', fontSize: '14px' }}>
+                No due date
+              </Typography>
             )}
-          </div>
+          </Box>
 
           {/* Story Points */}
           {task.storyPoints && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Story Points</h3>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500, color: '#939084', mb: 1, fontSize: '14px' }}>
+                Story Points
+              </Typography>
               <Badge variant="primary">{task.storyPoints}</Badge>
-            </div>
+            </Box>
           )}
 
           {/* Reporter */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Reporter</h3>
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#939084', mb: 1, fontSize: '14px' }}>
+              Reporter
+            </Typography>
             {task.reporter && (
-              <div className="flex items-center gap-2">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Avatar
                   src={task.reporter.avatar}
                   name={task.reporter.name}
                   size="sm"
                 />
-                <span className="text-sm text-gray-700">{task.reporter.name}</span>
-              </div>
+                <Typography variant="body2" sx={{ color: '#605d52', fontSize: '14px' }}>
+                  {task.reporter.name}
+                </Typography>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {/* Dates */}
-          <div className="pt-4 border-t border-gray-200">
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>Created: {formatDate(task.createdAt)}</p>
-              <p>Updated: {formatDate(task.updatedAt)}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+          <Divider sx={{ borderColor: '#c5c0b1', my: 1 }} />
+          <Box>
+            <Typography variant="caption" sx={{ color: '#939084', display: 'block', mb: 0.5 }}>
+              Created: {formatDate(task.createdAt)}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#939084' }}>
+              Updated: {formatDate(task.updatedAt)}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Comments and Attachments sections */}
-      <div className="mt-6 space-y-6">
+      <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <CommentThread taskId={task.id} />
         <AttachmentList taskId={task.id} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

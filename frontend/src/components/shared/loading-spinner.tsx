@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
@@ -9,33 +12,20 @@ interface LoadingSpinnerProps {
 }
 
 export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
-  const sizeStyles = {
-    sm: 'h-4 w-4',
-    md: 'h-8 w-8',
-    lg: 'h-12 w-12',
+  const sizeMap = {
+    sm: 16,
+    md: 32,
+    lg: 48,
   };
 
   return (
-    <svg
-      className={cn('animate-spin text-primary-600', sizeStyles[size], className)}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
+    <CircularProgress
+      size={sizeMap[size]}
+      sx={{
+        color: '#ff4f00',
+      }}
+      className={cn(className)}
+    />
   );
 }
 
@@ -45,10 +35,27 @@ interface LoadingPageProps {
 
 export function LoadingPage({ message = 'Loading...' }: LoadingPageProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px]">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+      }}
+    >
       <LoadingSpinner size="lg" />
-      <p className="mt-4 text-sm text-gray-500">{message}</p>
-    </div>
+      <Typography
+        variant="body2"
+        sx={{
+          mt: 2,
+          color: '#939084',
+          fontSize: '14px',
+        }}
+      >
+        {message}
+      </Typography>
+    </Box>
   );
 }
 
@@ -59,13 +66,24 @@ interface LoadingOverlayProps {
 
 export function LoadingOverlay({ isLoading, children }: LoadingOverlayProps) {
   return (
-    <div className="relative">
+    <Box sx={{ position: 'relative' }}>
       {children}
       {isLoading && (
-        <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-lg">
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: 'rgba(255, 254, 251, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            borderRadius: '12px',
+          }}
+        >
           <LoadingSpinner />
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

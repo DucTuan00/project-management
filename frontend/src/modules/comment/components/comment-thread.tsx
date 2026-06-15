@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { MessageSquare } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { useComments } from '../queries';
 import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
@@ -50,32 +52,44 @@ export function CommentThread({ taskId }: CommentThreadProps) {
   }, [socket, taskId]);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white">
-      <div className="border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-gray-500" />
-          <h3 className="text-sm font-medium text-gray-900">
+    <Box
+      sx={{
+        borderRadius: '12px',
+        border: '1px solid #c5c0b1',
+        backgroundColor: '#fffefb',
+      }}
+    >
+      <Box
+        sx={{
+          borderBottom: '1px solid #c5c0b1',
+          px: 2,
+          py: 1.5,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <MessageSquare style={{ fontSize: '16px', color: '#939084' }} />
+          <Typography variant="body2" sx={{ fontWeight: 500, color: '#201515', fontSize: '14px' }}>
             Comments ({comments?.length || 0})
-          </h3>
-        </div>
-      </div>
+          </Typography>
+        </Box>
+      </Box>
 
-      <div className="p-4">
+      <Box sx={{ p: 2 }}>
         {/* Comment form */}
-        <div className="mb-4">
+        <Box sx={{ mb: 2 }}>
           <CommentForm taskId={taskId} />
-        </div>
+        </Box>
 
         {/* Typing indicator */}
-        <TypingIndicator users={typingUsers} className="mb-3" />
+        <TypingIndicator users={typingUsers} sx={{ mb: 1.5 }} />
 
         {/* Comments list */}
         {isLoading ? (
-          <div className="flex justify-center py-8">
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <LoadingSpinner size="sm" />
-          </div>
+          </Box>
         ) : comments && comments.length > 0 ? (
-          <div className="divide-y divide-gray-100">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             {comments.map((comment) => (
               <CommentItem
                 key={comment.id}
@@ -83,13 +97,15 @@ export function CommentThread({ taskId }: CommentThreadProps) {
                 taskId={taskId}
               />
             ))}
-          </div>
+          </Box>
         ) : (
-          <div className="py-8 text-center text-sm text-gray-500">
-            No comments yet. Be the first to comment!
-          </div>
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
+              No comments yet. Be the first to comment!
+            </Typography>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

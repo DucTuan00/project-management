@@ -10,18 +10,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        canvas: {
+          DEFAULT: '#fffefb',
+          soft: '#f8f4f0',
+        },
+        ink: {
+          DEFAULT: '#201515',
+          soft: '#2f2a26',
+          mid: '#36342e',
+        },
+        body: {
+          DEFAULT: '#605d52',
+          mid: '#939084',
+        },
+        mute: '#c5c0b1',
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#ff4f00',
+          600: '#ff4f00',
+          700: '#cc3f00',
+          800: '#992f00',
+          900: '#662000',
+          950: '#331000',
         },
         success: {
           50: '#f0fdf4',
@@ -62,6 +76,16 @@ const config: Config = {
           900: '#7f1d1d',
           950: '#450a0a',
         },
+      },
+      borderRadius: {
+        sm: '6px',
+        md: '12px',
+        lg: '12px',
+        xl: '16px',
+        pill: '9999px',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       },
     },
   },

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
+import Box from '@mui/material/Box';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
 import { MemberList } from '@/modules/workspace/components/member-list';
@@ -78,15 +79,22 @@ export default function WorkspaceMembersPage() {
         actions={
           isOwner && (
             <Button onClick={() => setIsInviteOpen(true)}>
-              <UserPlus className="h-4 w-4 mr-2" />
+              <UserPlus size={16} style={{ marginRight: '8px' }} />
               Invite Member
             </Button>
           )
         }
       />
 
-      <div className="max-w-3xl">
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Box sx={{ maxWidth: '768px' }}>
+        <Box
+          sx={{
+            borderRadius: '12px',
+            border: '1px solid #c5c0b1',
+            backgroundColor: '#fffefb',
+            p: 3,
+          }}
+        >
           <MemberList
             members={members || []}
             isLoading={isLoading}
@@ -94,8 +102,8 @@ export default function WorkspaceMembersPage() {
             onChangeRole={handleChangeRole}
             onRemoveMember={handleRemoveMember}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       <InviteDialog
         isOpen={isInviteOpen}

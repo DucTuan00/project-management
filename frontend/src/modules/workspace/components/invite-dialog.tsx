@@ -3,6 +3,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Box from '@mui/material/Box';
 import { Modal, ModalActions } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +48,11 @@ export function InviteDialog({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Invite Member">
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      <Box
+        component="form"
+        onSubmit={handleSubmit(handleFormSubmit)}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+      >
         <Input
           label="Email Address"
           type="email"
@@ -66,7 +71,7 @@ export function InviteDialog({
             Send Invite
           </Button>
         </ModalActions>
-      </form>
+      </Box>
     </Modal>
   );
 }

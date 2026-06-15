@@ -2,7 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Building2, Users } from 'lucide-react';
+import { Building2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -22,25 +24,31 @@ export function WorkspaceList({
 }: WorkspaceListProps) {
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+        }}
+      >
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <Skeleton className="h-12 w-12 rounded-lg" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-5 w-1/2" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-4">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-20" />
-              </div>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                <Skeleton variant="rectangular" width={48} height={48} sx={{ borderRadius: '12px' }} />
+                <Box sx={{ flex: 1 }}>
+                  <Skeleton variant="text" width="50%" height={20} />
+                  <Skeleton variant="text" width="75%" height={16} />
+                </Box>
+              </Box>
+              <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Skeleton variant="text" width={80} height={14} />
+                <Skeleton variant="text" width={80} height={14} />
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
     );
   }
 
@@ -59,31 +67,77 @@ export function WorkspaceList({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <Box
+      sx={{
+        display: 'grid',
+        gap: 2,
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+      }}
+    >
       {workspaces.map((workspace) => (
-        <Link key={workspace.id} href={`/workspace/${workspace.id}`}>
-          <Card className="transition-shadow hover:shadow-md cursor-pointer h-full">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100">
-                  <Building2 className="h-6 w-6 text-primary-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+        <Link key={workspace.id} href={`/workspace/${workspace.id}`} style={{ textDecoration: 'none' }}>
+          <Card
+            sx={{
+              cursor: 'pointer',
+              height: '100%',
+              '&:hover': { boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
+              transition: 'box-shadow 0.2s',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#fff7ed',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Building2 style={{ color: '#ff4f00', fontSize: '24px' }} />
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: '#201515',
+                      fontSize: '18px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {workspace.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 0.5,
+                      color: '#939084',
+                      fontSize: '14px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {workspace.description || 'No description'}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
-                <span>Created {formatDate(workspace.createdAt)}</span>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2, color: '#939084', fontSize: '14px' }}>
+                <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
+                  Created {formatDate(workspace.createdAt)}
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         </Link>
       ))}
-    </div>
+    </Box>
   );
 }

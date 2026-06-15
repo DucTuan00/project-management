@@ -1,6 +1,10 @@
 'use client';
 
 import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import { cn } from '@/lib/utils';
 
 interface PageHeaderProps {
@@ -19,42 +23,81 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn('mb-8', className)}>
+    <Box className={cn(className)} sx={{ mb: 4 }}>
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="mb-4 flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm text-gray-500">
-            {breadcrumbs.map((crumb, index) => (
-              <li key={index} className="flex items-center">
-                {index > 0 && (
-                  <span className="mx-2 text-gray-400">/</span>
-                )}
-                {crumb.href ? (
-                  <a
-                    href={crumb.href}
-                    className="hover:text-gray-700 transition-colors"
-                  >
-                    {crumb.label}
-                  </a>
-                ) : (
-                  <span className="text-gray-900 font-medium">
-                    {crumb.label}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ol>
-        </nav>
+        <Breadcrumbs
+          aria-label="Breadcrumb"
+          sx={{ mb: 2, fontSize: '14px' }}
+        >
+          {breadcrumbs.map((crumb, index) => (
+            <React.Fragment key={index}>
+              {crumb.href ? (
+                <Link
+                  href={crumb.href}
+                  sx={{
+                    color: '#939084',
+                    fontSize: '14px',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      color: '#605d52',
+                    },
+                  }}
+                >
+                  {crumb.label}
+                </Link>
+              ) : (
+                <Typography
+                  sx={{
+                    color: '#201515',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                  }}
+                >
+                  {crumb.label}
+                </Typography>
+              )}
+            </React.Fragment>
+          ))}
+        </Breadcrumbs>
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: '#201515',
+              fontSize: '24px',
+            }}
+          >
+            {title}
+          </Typography>
           {description && (
-            <p className="mt-1 text-sm text-gray-500">{description}</p>
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.5,
+                color: '#939084',
+                fontSize: '14px',
+              }}
+            >
+              {description}
+            </Typography>
           )}
-        </div>
-        {actions && <div className="flex items-center gap-3">{actions}</div>}
-      </div>
-    </div>
+        </Box>
+        {actions && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {actions}
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 }

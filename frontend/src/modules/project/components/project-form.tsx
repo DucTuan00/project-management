@@ -3,6 +3,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Box from '@mui/material/Box';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,7 +46,11 @@ export function ProjectForm({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Input
         label="Project Name"
         placeholder="My Project"
@@ -70,7 +75,7 @@ export function ProjectForm({
         {...register('description')}
       />
 
-      <div className="flex items-center justify-end gap-3">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5 }}>
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel}>
             Cancel
@@ -79,7 +84,7 @@ export function ProjectForm({
         <Button type="submit" loading={isLoading}>
           {mode === 'create' ? 'Create Project' : 'Save Changes'}
         </Button>
-      </div>
-    </form>
+      </Box>
+    </Box>
   );
 }

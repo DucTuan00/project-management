@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import MuiTextField from '@mui/material/TextField';
 import { cn } from '@/lib/utils';
 
 export interface TextareaProps
@@ -15,35 +16,46 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-');
 
     return (
-      <div className="w-full">
-        {label && (
-          <label
-            htmlFor={textareaId}
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            {label}
-          </label>
-        )}
-        <textarea
-          ref={ref}
-          id={textareaId}
-          className={cn(
-            'block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder:text-gray-400',
-            'focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500',
-            'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
-            'min-h-[100px] resize-y',
-            error && 'border-danger-500 focus:border-danger-500 focus:ring-danger-500',
-            className
-          )}
-          {...props}
-        />
-        {error && (
-          <p className="mt-1 text-sm text-danger-600">{error}</p>
-        )}
-        {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
-        )}
-      </div>
+      <MuiTextField
+        inputRef={ref}
+        id={textareaId}
+        label={label}
+        error={!!error}
+        helperText={error || helperText}
+        fullWidth
+        multiline
+        minRows={4}
+        className={cn(className)}
+        InputProps={{
+          style: {
+            minHeight: '100px',
+          },
+        }}
+        inputProps={{
+          ...props,
+        }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '6px',
+            backgroundColor: '#fffefb',
+            '& fieldset': {
+              borderColor: '#c5c0b1',
+            },
+            '&:hover fieldset': {
+              borderColor: '#939084',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#ff4f00',
+            },
+          },
+          '& .MuiInputLabel-root': {
+            color: '#605d52',
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: '#ff4f00',
+          },
+        }}
+      />
     );
   }
 );

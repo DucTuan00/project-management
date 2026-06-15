@@ -1,6 +1,11 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React from 'react';
+import MuiDialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -21,74 +26,51 @@ export function Modal({
   size = 'md',
   showClose = true,
 }: ModalProps) {
-  const handleEscape = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, handleEscape]);
-
-  if (!isOpen) return null;
-
-  const sizeStyles = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
+  const sizeMap = {
+    sm: 'sm' as const,
+    md: 'md' as const,
+    lg: 'lg' as const,
+    xl: 'xl' as const,
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/50 transition-opacity"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className={cn(
-            'relative w-full transform rounded-xl bg-white shadow-xl transition-all',
-            sizeStyles[size]
-          )}
-          onClick={(e) => e.stopPropagation()}
+    <MuiDialog
+      open={isOpen}
+      onClose={onClose}
+      maxWidth={sizeMap[size]}
+      fullWidth
+      sx={{
+        '& .MuiDialog-paper': {
+          borderRadius: '12px',
+          border: '1px solid #c5c0b1',
+          backgroundColor: '#fffefb',
+        },
+      }}
+    >
+      {(title || showClose) && (
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #c5c0b1',
+            px: 3,
+            py: 2,
+            color: '#201515',
+          }}
         >
-          {/* Header */}
-          {(title || showClose) && (
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              {title && (
-                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-              )}
-              {showClose && (
-                <button
-                  onClick={onClose}
-                  className="rounded-lg p-1 text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </div>
+          {title}
+          {showClose && (
+            <IconButton onClick={onClose} size="small" sx={{ color: '#939084' }}>
+              <X size={20} />
+            </IconButton>
           )}
-
-          {/* Content */}
-          <div className="px-6 py-4">{children}</div>
-        </div>
-      </div>
-    </div>
+        </DialogTitle>
+      )}
+      <DialogContent sx={{ px: 3, py: 2 }}>
+        {children}
+      </DialogContent>
+    </MuiDialog>
   );
 }
 
@@ -100,13 +82,16 @@ interface ModalActionsProps {
 
 export function ModalActions({ children, className }: ModalActionsProps) {
   return (
-    <div
-      className={cn(
-        'flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4',
-        className
-      )}
+    <DialogActions
+      className={cn('border-t border-mute', className)}
+      sx={{
+        px: 3,
+        py: 2,
+        justifyContent: 'flex-end',
+        gap: 1,
+      }}
     >
       {children}
-    </div>
+    </DialogActions>
   );
 }

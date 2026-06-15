@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import { TOAST_DURATION } from '@/lib/constants';
 
 type ToastType = 'success' | 'error' | 'info';
@@ -66,49 +66,45 @@ function ToastContainer({
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <>
       {toasts.map((t) => (
-        <ToastItem key={t.id} toast={t} onClose={() => removeToast(t.id)} />
+        <Snackbar
+          key={t.id}
+          open={true}
+          autoHideDuration={TOAST_DURATION}
+          onClose={() => removeToast(t.id)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          sx={{
+            '& .MuiSnackbar-root': {
+              bottom: '16px',
+              right: '16px',
+            },
+          }}
+        >
+          <Alert
+            onClose={() => removeToast(t.id)}
+            severity={t.type}
+            variant="filled"
+            sx={{
+              width: '100%',
+              borderRadius: '12px',
+              backgroundColor:
+                t.type === 'success'
+                  ? '#16a34a'
+                  : t.type === 'error'
+                  ? '#dc2626'
+                  : '#ff4f00',
+              '& .MuiAlert-message': {
+                fontSize: '14px',
+                fontWeight: 500,
+              },
+            }}
+          >
+            {t.message}
+          </Alert>
+        </Snackbar>
       ))}
-    </div>
-  );
-}
-
-function ToastItem({
-  toast,
-  onClose,
-}: {
-  toast: Toast;
-  onClose: () => void;
-}) {
-  const icons = {
-    success: <CheckCircle className="h-5 w-5 text-success-500" />,
-    error: <AlertCircle className="h-5 w-5 text-danger-500" />,
-    info: <Info className="h-5 w-5 text-primary-500" />,
-  };
-
-  const bgColors = {
-    success: 'bg-success-50 border-success-200',
-    error: 'bg-danger-50 border-danger-200',
-    info: 'bg-primary-50 border-primary-200',
-  };
-
-  return (
-    <div
-      className={cn(
-        'flex items-center gap-3 rounded-lg border p-4 shadow-lg animate-slide-in',
-        bgColors[toast.type]
-      )}
-    >
-      {icons[toast.type]}
-      <p className="text-sm text-gray-800">{toast.message}</p>
-      <button
-        onClick={onClose}
-        className="ml-4 text-gray-400 hover:text-gray-500"
-      >
-        <X className="h-4 w-4" />
-      </button>
-    </div>
+    </>
   );
 }
 
@@ -120,35 +116,38 @@ interface ToastProps {
 }
 
 export function Toast({ message, type = 'info', onClose }: ToastProps) {
-  const icons = {
-    success: <CheckCircle className="h-5 w-5 text-success-500" />,
-    error: <AlertCircle className="h-5 w-5 text-danger-500" />,
-    info: <Info className="h-5 w-5 text-primary-500" />,
-  };
-
-  const bgColors = {
-    success: 'bg-success-50 border-success-200',
-    error: 'bg-danger-50 border-danger-200',
-    info: 'bg-primary-50 border-primary-200',
-  };
-
   return (
-    <div
-      className={cn(
-        'flex items-center gap-3 rounded-lg border p-4 shadow-lg',
-        bgColors[type]
-      )}
+    <Alert
+      severity={type}
+      onClose={onClose}
+      sx={{
+        borderRadius: '12px',
+        backgroundColor:
+          type === 'success'
+            ? '#dcfce7'
+            : type === 'error'
+            ? '#fee2e2'
+            : '#fff7ed',
+        color:
+          type === 'success'
+            ? '#16a34a'
+            : type === 'error'
+            ? '#dc2626'
+            : '#ff4f00',
+        border: `1px solid ${
+          type === 'success'
+            ? '#bbf7d0'
+            : type === 'error'
+            ? '#fecaca'
+            : '#fed7aa'
+        }`,
+        '& .MuiAlert-message': {
+          fontSize: '14px',
+          fontWeight: 500,
+        },
+      }}
     >
-      {icons[type]}
-      <p className="text-sm text-gray-800">{message}</p>
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="ml-4 text-gray-400 hover:text-gray-500"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      )}
-    </div>
+      {message}
+    </Alert>
   );
 }

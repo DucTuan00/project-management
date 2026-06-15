@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { Mail, Lock, User } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/providers/auth-provider';
@@ -36,12 +38,16 @@ export function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Input
         label="Full Name"
         type="text"
         placeholder="John Doe"
-        leftIcon={<User className="h-5 w-5" />}
+        leftIcon={<User size={20} />}
         error={errors.displayName?.message}
         {...register('displayName')}
       />
@@ -50,7 +56,7 @@ export function RegisterForm() {
         label="Email"
         type="email"
         placeholder="you@example.com"
-        leftIcon={<Mail className="h-5 w-5" />}
+        leftIcon={<Mail size={20} />}
         error={errors.email?.message}
         {...register('email')}
       />
@@ -59,7 +65,7 @@ export function RegisterForm() {
         label="Password"
         type="password"
         placeholder="Create a password"
-        leftIcon={<Lock className="h-5 w-5" />}
+        leftIcon={<Lock size={20} />}
         error={errors.password?.message}
         {...register('password')}
       />
@@ -68,7 +74,7 @@ export function RegisterForm() {
         label="Confirm Password"
         type="password"
         placeholder="Confirm your password"
-        leftIcon={<Lock className="h-5 w-5" />}
+        leftIcon={<Lock size={20} />}
         error={errors.confirmPassword?.message}
         {...register('confirmPassword')}
       />
@@ -82,15 +88,26 @@ export function RegisterForm() {
         Create account
       </Button>
 
-      <p className="text-center text-sm text-gray-500">
+      <Typography
+        variant="body2"
+        sx={{
+          textAlign: 'center',
+          color: '#939084',
+          fontSize: '14px',
+        }}
+      >
         Already have an account?{' '}
         <Link
           href="/login"
-          className="font-medium text-primary-600 hover:text-primary-500"
+          style={{
+            fontWeight: 500,
+            color: '#ff4f00',
+            textDecoration: 'none',
+          }}
         >
           Sign in
         </Link>
-      </p>
-    </form>
+      </Typography>
+    </Box>
   );
 }

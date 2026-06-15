@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { MoreHorizontal, Edit2, Trash2, Reply } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Avatar } from '@/components/ui/avatar';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useAuth } from '@/providers/auth-provider';
@@ -58,7 +60,7 @@ export function CommentItem({ comment, taskId, depth = 0 }: CommentItemProps) {
       ? [
           {
             label: 'Edit',
-            icon: <Edit2 className="h-4 w-4" />,
+            icon: <Edit2 size={16} />,
             onClick: () => setIsEditing(true),
           },
         ]
@@ -67,7 +69,7 @@ export function CommentItem({ comment, taskId, depth = 0 }: CommentItemProps) {
       ? [
           {
             label: 'Reply',
-            icon: <Reply className="h-4 w-4" />,
+            icon: <Reply size={16} />,
             onClick: () => setIsReplying(true),
           },
         ]
@@ -76,7 +78,7 @@ export function CommentItem({ comment, taskId, depth = 0 }: CommentItemProps) {
       ? [
           {
             label: 'Delete',
-            icon: <Trash2 className="h-4 w-4" />,
+            icon: <Trash2 size={16} />,
             onClick: handleDelete,
             danger: true,
           },
@@ -86,82 +88,115 @@ export function CommentItem({ comment, taskId, depth = 0 }: CommentItemProps) {
 
   if (isEditing) {
     return (
-      <div className={cn('py-3', depth > 0 && 'ml-8')}>
+      <Box sx={{ py: 1.5, ml: depth > 0 ? 4 : 0 }}>
         <CommentForm
           taskId={taskId}
           onCancel={() => setIsEditing(false)}
           placeholder="Edit your comment..."
         />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className={cn('py-3', depth > 0 && 'ml-8')}>
-      <div className="flex items-start gap-3">
+    <Box sx={{ py: 1.5, ml: depth > 0 ? 4 : 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
         <Avatar
           name={comment.author.displayName}
           src={comment.author.avatarUrl}
           size="sm"
         />
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-900">
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#201515', fontSize: '14px' }}>
               {comment.author.displayName}
-            </span>
-            <span className="text-xs text-gray-500">
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#939084', fontSize: '12px' }}>
               {formatDate(comment.createdAt)}
-            </span>
+            </Typography>
             {comment.isEdited && (
-              <span className="text-xs text-gray-400">(edited)</span>
+              <Typography variant="caption" sx={{ color: '#c5c0b1', fontSize: '12px' }}>
+                (edited)
+              </Typography>
             )}
-          </div>
+          </Box>
 
-          <div className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 0.5,
+              color: '#605d52',
+              whiteSpace: 'pre-wrap',
+              fontSize: '14px',
+            }}
+          >
             {comment.content}
-          </div>
+          </Typography>
 
-          <div className="mt-2 flex items-center gap-4">
+          <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
             {depth < maxDepth && (
-              <button
+              <Box
+                component="button"
                 onClick={() => setIsReplying(true)}
-                className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  fontSize: '12px',
+                  color: '#939084',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  '&:hover': { color: '#605d52' },
+                  p: 0,
+                }}
               >
-                <Reply className="h-3 w-3" />
+                <Reply style={{ fontSize: '12px' }} />
                 Reply
-              </button>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {isReplying && (
-            <div className="mt-3">
+            <Box sx={{ mt: 1.5 }}>
               <CommentForm
                 taskId={taskId}
                 parentId={comment.id}
                 onCancel={() => setIsReplying(false)}
                 placeholder="Write a reply..."
               />
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
 
         {menuItems.length > 0 && (
           <Dropdown
             trigger={
-              <button className="rounded p-1 text-gray-400 hover:text-gray-500">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
+              <Box
+                component="button"
+                sx={{
+                  p: 0.5,
+                  color: '#939084',
+                  '&:hover': { color: '#605d52' },
+                  transition: 'color 0.2s',
+                  border: 'none',
+                  background: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <MoreHorizontal size={16} />
+              </Box>
             }
             items={menuItems}
             align="right"
           />
         )}
-      </div>
+      </Box>
 
       {/* Replies */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-2">
+        <Box sx={{ mt: 1 }}>
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply.id}
@@ -170,8 +205,8 @@ export function CommentItem({ comment, taskId, depth = 0 }: CommentItemProps) {
               depth={depth + 1}
             />
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

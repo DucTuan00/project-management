@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Search, Bell, LogOut, User, Settings } from 'lucide-react';
+import { Search, LogOut, User, Settings } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import MuiAppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
 import { Avatar } from '@/components/ui/avatar';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useAuth } from '@/providers/auth-provider';
@@ -17,60 +22,107 @@ export function Header({ title }: HeaderProps) {
   const userMenuItems = [
     {
       label: 'Profile',
-      icon: <User className="h-4 w-4" />,
+      icon: <User size={16} />,
       onClick: () => {},
     },
     {
       label: 'Settings',
-      icon: <Settings className="h-4 w-4" />,
+      icon: <Settings size={16} />,
       onClick: () => {},
     },
     {
       label: 'Logout',
-      icon: <LogOut className="h-4 w-4" />,
+      icon: <LogOut size={16} />,
       onClick: logout,
       danger: true,
     },
   ];
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
-      <div className="flex items-center gap-4">
-        {title && (
-          <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
-        )}
-      </div>
+    <MuiAppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        backgroundColor: '#fffefb',
+        borderBottom: '1px solid #c5c0b1',
+        color: '#201515',
+      }}
+    >
+      <Toolbar
+        sx={{
+          justifyContent: 'space-between',
+          minHeight: '64px',
+          px: 3,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {title && (
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: '#201515',
+                fontSize: '18px',
+              }}
+            >
+              {title}
+            </Typography>
+          )}
+        </Box>
 
-      <div className="flex items-center gap-4">
-        {/* Search */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-64 rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
-          />
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Search */}
+          <Box
+            sx={{
+              position: 'relative',
+              display: { xs: 'none', md: 'block' },
+            }}
+          >
+            <Search
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#939084',
+                fontSize: '18px',
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-64 rounded-lg border border-mute bg-canvas-soft py-2 pl-10 pr-4 text-sm text-ink placeholder:text-body-mid focus:border-primary focus:bg-canvas focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </Box>
 
-        {/* Notifications */}
-        <NotificationDropdown />
+          {/* Notifications */}
+          <NotificationDropdown />
 
-        {/* User menu */}
-        {user && (
-          <Dropdown
-            trigger={
-              <div className="flex items-center gap-2">
-                <Avatar name={user.displayName} size="sm" />
-                <span className="hidden text-sm font-medium text-gray-700 md:block">
-                  {user.displayName}
-                </span>
-              </div>
-            }
-            items={userMenuItems}
-            align="right"
-          />
-        )}
-      </div>
-    </header>
+          {/* User menu */}
+          {user && (
+            <Dropdown
+              trigger={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
+                  <Avatar name={user.displayName} size="sm" />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      display: { xs: 'none', md: 'block' },
+                      fontWeight: 500,
+                      color: '#605d52',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {user.displayName}
+                  </Typography>
+                </Box>
+              }
+              items={userMenuItems}
+              align="right"
+            />
+          )}
+        </Box>
+      </Toolbar>
+    </MuiAppBar>
   );
 }

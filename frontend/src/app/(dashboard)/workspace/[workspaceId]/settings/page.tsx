@@ -2,6 +2,9 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { PageHeader } from '@/components/shared/page-header';
 import { WorkspaceForm } from '@/modules/workspace/components/workspace-form';
 import { useWorkspace, useUpdateWorkspace } from '@/modules/workspace/queries';
@@ -27,9 +30,16 @@ export default function WorkspaceSettingsPage() {
 
   if (isLoading || !workspace) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
-      </div>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '400px',
+        }}
+      >
+        <CircularProgress sx={{ color: '#ff4f00' }} />
+      </Box>
     );
   }
 
@@ -45,11 +55,26 @@ export default function WorkspaceSettingsPage() {
         ]}
       />
 
-      <div className="max-w-2xl">
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <Box sx={{ maxWidth: '672px' }}>
+        <Box
+          sx={{
+            borderRadius: '12px',
+            border: '1px solid #c5c0b1',
+            backgroundColor: '#fffefb',
+            p: 3,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 500,
+              color: '#201515',
+              fontSize: '18px',
+              mb: 2,
+            }}
+          >
             General Settings
-          </h3>
+          </Typography>
           <WorkspaceForm
             mode="edit"
             initialData={{
@@ -59,8 +84,8 @@ export default function WorkspaceSettingsPage() {
             onSubmit={handleUpdate}
             isLoading={updateWorkspace.isPending}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
     </div>
   );
 }

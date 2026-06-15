@@ -3,6 +3,9 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/page-header';
@@ -55,9 +58,16 @@ export default function ProjectSettingsPage() {
 
   if (projectLoading || !project) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
-      </div>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '400px',
+        }}
+      >
+        <CircularProgress sx={{ color: '#ff4f00' }} />
+      </Box>
     );
   }
 
@@ -73,12 +83,16 @@ export default function ProjectSettingsPage() {
         ]}
       />
 
-      <div className="max-w-3xl space-y-6">
+      <Box sx={{ maxWidth: '768px', display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* General Settings */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">General</h3>
-            <p className="text-sm text-gray-500">Update your project details</p>
+            <Typography variant="h6" sx={{ fontWeight: 500, color: '#201515', fontSize: '18px' }}>
+              General
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
+              Update your project details
+            </Typography>
           </CardHeader>
           <CardContent>
             <ProjectForm
@@ -96,18 +110,28 @@ export default function ProjectSettingsPage() {
         {/* Workflow Settings */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">Workflow</h3>
-            <p className="text-sm text-gray-500">
+            <Typography variant="h6" sx={{ fontWeight: 500, color: '#201515', fontSize: '18px' }}>
+              Workflow
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
               Configure your Kanban board columns
-            </p>
+            </Typography>
           </CardHeader>
           <CardContent>
             {settingsLoading ? (
-              <div className="space-y-3">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                  <Box
+                    key={i}
+                    sx={{
+                      height: '48px',
+                      backgroundColor: '#f8f4f0',
+                      borderRadius: '12px',
+                      animation: 'pulse 2s infinite',
+                    }}
+                  />
                 ))}
-              </div>
+              </Box>
             ) : (
               <ProjectSettingsForm
                 projectId={projectId}
@@ -118,34 +142,38 @@ export default function ProjectSettingsPage() {
         </Card>
 
         {/* Danger Zone */}
-        <Card className="border-danger-200">
+        <Card sx={{ borderColor: '#fecaca' }}>
           <CardHeader>
-            <h3 className="text-lg font-medium text-danger-600">Danger Zone</h3>
-            <p className="text-sm text-gray-500">
+            <Typography variant="h6" sx={{ fontWeight: 500, color: '#dc2626', fontSize: '18px' }}>
+              Danger Zone
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
               Irreversible and destructive actions
-            </p>
+            </Typography>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Delete Project</p>
-                <p className="text-sm text-gray-500">
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 500, color: '#201515' }}>
+                  Delete Project
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#939084', fontSize: '14px' }}>
                   Once you delete a project, there is no going back. All tasks will be
                   permanently deleted.
-                </p>
-              </div>
+                </Typography>
+              </Box>
               <Button
                 variant="danger"
                 onClick={handleDeleteProject}
                 loading={deleteProject.isPending}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 size={16} style={{ marginRight: '8px' }} />
                 Delete Project
               </Button>
-            </div>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
     </div>
   );
 }

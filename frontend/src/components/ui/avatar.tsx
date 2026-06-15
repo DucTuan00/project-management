@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import MuiAvatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
 import { cn } from '@/lib/utils';
 import { getInitials } from '@/lib/utils';
 
@@ -15,44 +17,57 @@ export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, src, alt, name, size = 'md', showOnline = false, isOnline = false, ...props }, ref) => {
-    const sizeStyles = {
-      sm: 'h-8 w-8 text-xs',
-      md: 'h-10 w-10 text-sm',
-      lg: 'h-12 w-12 text-base',
+    const sizeMap = {
+      sm: 32,
+      md: 40,
+      lg: 48,
     };
 
     const initials = getInitials(name);
 
-    return (
-      <div
+    const avatar = (
+      <MuiAvatar
         ref={ref}
-        className={cn(
-          'relative inline-flex items-center justify-center rounded-full bg-primary-100 text-primary-700 font-medium overflow-hidden',
-          sizeStyles[size],
-          className
-        )}
-        title={name}
+        src={src || undefined}
+        alt={alt || name}
+        sx={{
+          width: sizeMap[size],
+          height: sizeMap[size],
+          backgroundColor: '#fff7ed',
+          color: '#ff4f00',
+          fontSize: size === 'sm' ? '12px' : size === 'md' ? '14px' : '16px',
+          fontWeight: 500,
+        }}
+        className={cn(className)}
         {...props}
       >
-        {src ? (
-          <img
-            src={src}
-            alt={alt || name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <span>{initials}</span>
-        )}
-        {showOnline && (
-          <span
-            className={cn(
-              'absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white',
-              isOnline ? 'bg-success-500' : 'bg-gray-300'
-            )}
-          />
-        )}
-      </div>
+        {!src && initials}
+      </MuiAvatar>
     );
+
+    if (showOnline) {
+      return (
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          variant="dot"
+          sx={{
+            '& .MuiBadge-badge': {
+              backgroundColor: isOnline ? '#22c55e' : '#c5c0b1',
+              color: isOnline ? '#22c55e' : '#c5c0b1',
+              boxShadow: '0 0 0 2px #fffefb',
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+            },
+          }}
+        >
+          {avatar}
+        </Badge>
+      );
+    }
+
+    return avatar;
   }
 );
 
@@ -67,10 +82,10 @@ interface AvatarGroupProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const AvatarGroup = React.forwardRef<HTMLDivElement, AvatarGroupProps>(
   ({ className, avatars, max = 3, size = 'md', ...props }, ref) => {
-    const sizeStyles = {
-      sm: 'h-8 w-8 text-xs',
-      md: 'h-10 w-10 text-sm',
-      lg: 'h-12 w-12 text-base',
+    const sizeMap = {
+      sm: 32,
+      md: 40,
+      lg: 48,
     };
 
     const visibleAvatars = avatars.slice(0, max);
@@ -79,26 +94,36 @@ const AvatarGroup = React.forwardRef<HTMLDivElement, AvatarGroupProps>(
     return (
       <div ref={ref} className={cn('flex -space-x-2', className)} {...props}>
         {visibleAvatars.map((avatar, index) => (
-          <Avatar
+          <MuiAvatar
             key={index}
-            src={avatar.src}
-            name={avatar.name}
-            size={size}
-            className={cn(
-              'ring-2 ring-white',
-              sizeStyles[size]
-            )}
-          />
+            src={avatar.src || undefined}
+            sx={{
+              width: sizeMap[size],
+              height: sizeMap[size],
+              backgroundColor: '#fff7ed',
+              color: '#ff4f00',
+              fontSize: size === 'sm' ? '12px' : size === 'md' ? '14px' : '16px',
+              fontWeight: 500,
+              border: '2px solid #fffefb',
+            }}
+          >
+            {getInitials(avatar.name)}
+          </MuiAvatar>
         ))}
         {remainingCount > 0 && (
-          <div
-            className={cn(
-              'inline-flex items-center justify-center rounded-full bg-gray-200 text-gray-600 font-medium ring-2 ring-white',
-              sizeStyles[size]
-            )}
+          <MuiAvatar
+            sx={{
+              width: sizeMap[size],
+              height: sizeMap[size],
+              backgroundColor: '#f8f4f0',
+              color: '#605d52',
+              fontSize: size === 'sm' ? '12px' : size === 'md' ? '14px' : '16px',
+              fontWeight: 500,
+              border: '2px solid #fffefb',
+            }}
           >
             +{remainingCount}
-          </div>
+          </MuiAvatar>
         )}
       </div>
     );

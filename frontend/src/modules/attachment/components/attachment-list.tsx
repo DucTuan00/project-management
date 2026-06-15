@@ -10,6 +10,8 @@ import {
   File,
   Upload,
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/providers/auth-provider';
 import { useAttachments, useUploadAttachment, useDeleteAttachment, useDownloadAttachment } from '../queries';
@@ -22,9 +24,9 @@ interface AttachmentListProps {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return <Image className="h-5 w-5 text-primary-500" />;
-  if (mimeType.includes('pdf')) return <FileText className="h-5 w-5 text-danger-500" />;
-  return <File className="h-5 w-5 text-gray-500" />;
+  if (mimeType.startsWith('image/')) return <Image style={{ fontSize: '20px', color: '#ff4f00' }} />;
+  if (mimeType.includes('pdf')) return <FileText style={{ fontSize: '20px', color: '#dc2626' }} />;
+  return <File style={{ fontSize: '20px', color: '#939084' }} />;
 }
 
 export function AttachmentList({ taskId }: AttachmentListProps) {
@@ -79,64 +81,97 @@ export function AttachmentList({ taskId }: AttachmentListProps) {
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white">
-      <div className="border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Paperclip className="h-4 w-4 text-gray-500" />
-            <h3 className="text-sm font-medium text-gray-900">
+    <Box
+      sx={{
+        borderRadius: '12px',
+        border: '1px solid #c5c0b1',
+        backgroundColor: '#fffefb',
+      }}
+    >
+      <Box
+        sx={{
+          borderBottom: '1px solid #c5c0b1',
+          px: 2,
+          py: 1.5,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Paperclip style={{ fontSize: '16px', color: '#939084' }} />
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#201515', fontSize: '14px' }}>
               Attachments ({attachments?.length || 0})
-            </h3>
-          </div>
+            </Typography>
+          </Box>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
             loading={uploadAttachment.isPending}
           >
-            <Upload className="h-4 w-4 mr-1" />
+            <Upload size={16} style={{ marginRight: '4px' }} />
             Upload
           </Button>
           <input
             ref={fileInputRef}
             type="file"
-            className="hidden"
+            style={{ display: 'none' }}
             onChange={handleUpload}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="p-4">
+      <Box sx={{ p: 2 }}>
         {isLoading ? (
-          <div className="flex justify-center py-8">
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <LoadingSpinner size="sm" />
-          </div>
+          </Box>
         ) : attachments && attachments.length > 0 ? (
-          <div className="space-y-3">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {attachments.map((attachment) => (
-              <div
+              <Box
                 key={attachment.id}
-                className="flex items-center gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  borderRadius: '12px',
+                  border: '1px solid #f8f4f0',
+                  p: 1.5,
+                  '&:hover': {
+                    backgroundColor: '#f8f4f0',
+                  },
+                  transition: 'background-color 0.2s',
+                }}
               >
                 {getFileIcon(attachment.mimeType)}
 
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 500,
+                      color: '#201515',
+                      fontSize: '14px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {attachment.fileName}
-                  </p>
-                  <p className="text-xs text-gray-500">
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#939084', fontSize: '12px' }}>
                     {attachment.fileSizeFormatted} · {attachment.uploader.displayName} ·{' '}
                     {formatDate(attachment.createdAt)}
-                  </p>
-                </div>
+                  </Typography>
+                </Box>
 
-                <div className="flex items-center gap-1">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDownload(attachment.id, attachment.fileName)}
                   >
-                    <Download className="h-4 w-4" />
+                    <Download size={16} />
                   </Button>
                   {attachment.uploader.id === user?.id && (
                     <Button
@@ -144,21 +179,25 @@ export function AttachmentList({ taskId }: AttachmentListProps) {
                       size="sm"
                       onClick={() => handleDelete(attachment.id)}
                     >
-                      <Trash2 className="h-4 w-4 text-danger-500" />
+                      <Trash2 size={16} sx={{ color: '#dc2626' }} />
                     </Button>
                   )}
-                </div>
-              </div>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Box>
         ) : (
-          <div className="py-8 text-center">
-            <Paperclip className="mx-auto h-8 w-8 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-500">No attachments yet</p>
-            <p className="text-xs text-gray-400">Upload files up to 10MB</p>
-          </div>
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Paperclip style={{ fontSize: '32px', color: '#939084', margin: '0 auto', display: 'block' }} />
+            <Typography variant="body2" sx={{ mt: 1, color: '#939084', fontSize: '14px' }}>
+              No attachments yet
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#c5c0b1', fontSize: '12px' }}>
+              Upload files up to 10MB
+            </Typography>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

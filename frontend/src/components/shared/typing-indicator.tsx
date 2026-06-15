@@ -1,14 +1,18 @@
 'use client';
 
 import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { SxProps, Theme } from '@mui/material/styles';
 import { cn } from '@/lib/utils';
 
 interface TypingIndicatorProps {
   users: Array<{ userId: string; displayName: string }>;
   className?: string;
+  sx?: SxProps<Theme>;
 }
 
-export function TypingIndicator({ users, className }: TypingIndicatorProps) {
+export function TypingIndicator({ users, className, sx }: TypingIndicatorProps) {
   if (users.length === 0) return null;
 
   const text =
@@ -19,13 +23,57 @@ export function TypingIndicator({ users, className }: TypingIndicatorProps) {
         : `${users[0].displayName} and ${users.length - 1} others are typing`;
 
   return (
-    <div className={cn('flex items-center gap-2 text-sm text-gray-500', className)}>
-      <div className="flex gap-0.5">
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]" />
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]" />
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400" />
-      </div>
-      <span>{text}</span>
-    </div>
+    <Box
+      className={cn(className)}
+      sx={[
+        {
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <Box
+          sx={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#939084',
+            animation: 'bounce 1s infinite',
+            animationDelay: '-0.3s',
+          }}
+        />
+        <Box
+          sx={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#939084',
+            animation: 'bounce 1s infinite',
+            animationDelay: '-0.15s',
+          }}
+        />
+        <Box
+          sx={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#939084',
+            animation: 'bounce 1s infinite',
+          }}
+        />
+      </Box>
+      <Typography
+        variant="body2"
+        sx={{
+          color: '#939084',
+          fontSize: '14px',
+        }}
+      >
+        {text}
+      </Typography>
+    </Box>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import MuiChip from '@mui/material/Chip';
 import { cn } from '@/lib/utils';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -11,31 +12,35 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({ className, variant = 'default', size = 'sm', children, ...props }, ref) => {
     const variantStyles = {
-      default: 'bg-gray-100 text-gray-700',
-      primary: 'bg-primary-100 text-primary-700',
-      success: 'bg-success-100 text-success-700',
-      warning: 'bg-warning-100 text-warning-700',
-      danger: 'bg-danger-100 text-danger-700',
+      default: { backgroundColor: '#f8f4f0', color: '#605d52' },
+      primary: { backgroundColor: '#fff7ed', color: '#ff4f00' },
+      success: { backgroundColor: '#dcfce7', color: '#16a34a' },
+      warning: { backgroundColor: '#fef3c7', color: '#d97706' },
+      danger: { backgroundColor: '#fee2e2', color: '#dc2626' },
     };
 
     const sizeStyles = {
-      sm: 'px-2 py-0.5 text-xs',
-      md: 'px-2.5 py-1 text-sm',
+      sm: { height: '24px', fontSize: '12px' },
+      md: { height: '28px', fontSize: '14px' },
     };
 
     return (
-      <span
+      <MuiChip
         ref={ref}
-        className={cn(
-          'inline-flex items-center font-medium rounded-full',
-          variantStyles[variant],
-          sizeStyles[size],
-          className
-        )}
+        label={children}
+        size={size === 'sm' ? 'small' : 'medium'}
+        className={cn(className)}
+        sx={{
+          ...variantStyles[variant],
+          ...sizeStyles[size],
+          borderRadius: '9999px',
+          fontWeight: 500,
+          '& .MuiChip-label': {
+            padding: size === 'sm' ? '0 8px' : '0 10px',
+          },
+        }}
         {...props}
-      >
-        {children}
-      </span>
+      />
     );
   }
 );

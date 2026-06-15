@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { Mail, Lock } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/providers/auth-provider';
@@ -36,12 +38,16 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Input
         label="Email"
         type="email"
         placeholder="you@example.com"
-        leftIcon={<Mail className="h-5 w-5" />}
+        leftIcon={<Mail size={20} />}
         error={errors.email?.message}
         {...register('email')}
       />
@@ -50,19 +56,24 @@ export function LoginForm() {
         label="Password"
         type="password"
         placeholder="Enter your password"
-        leftIcon={<Lock className="h-5 w-5" />}
+        leftIcon={<Lock size={20} />}
         error={errors.password?.message}
         {...register('password')}
       />
 
-      <div className="flex items-center justify-end">
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Link
           href="/forgot-password"
-          className="text-sm font-medium text-primary-600 hover:text-primary-500"
+          style={{
+            fontSize: '14px',
+            fontWeight: 500,
+            color: '#ff4f00',
+            textDecoration: 'none',
+          }}
         >
           Forgot password?
         </Link>
-      </div>
+      </Box>
 
       <Button
         type="submit"
@@ -73,15 +84,26 @@ export function LoginForm() {
         Sign in
       </Button>
 
-      <p className="text-center text-sm text-gray-500">
+      <Typography
+        variant="body2"
+        sx={{
+          textAlign: 'center',
+          color: '#939084',
+          fontSize: '14px',
+        }}
+      >
         Don't have an account?{' '}
         <Link
           href="/register"
-          className="font-medium text-primary-600 hover:text-primary-500"
+          style={{
+            fontWeight: 500,
+            color: '#ff4f00',
+            textDecoration: 'none',
+          }}
         >
           Sign up
         </Link>
-      </p>
-    </form>
+      </Typography>
+    </Box>
   );
 }
