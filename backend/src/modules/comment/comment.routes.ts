@@ -10,7 +10,8 @@ import { authenticate } from '@/shared/middleware/auth.middleware';
 import {
   createCommentSchema,
   updateCommentSchema,
-  listCommentsSchema,
+  commentParamsSchema,
+  listCommentsQuerySchema,
 } from '@/modules/comment/comment.dto';
 
 const commentRepository = new CommentRepository(AppDataSource);
@@ -27,15 +28,15 @@ router.use(authenticate);
 // List comments for a task
 router.get(
   '/tasks/:taskId/comments',
-  validate(listCommentsSchema, 'params'),
-  validate(listCommentsSchema, 'query'),
+  validate(commentParamsSchema, 'params'),
+  validate(listCommentsQuerySchema, 'query'),
   commentController.listByTask,
 );
 
 // Create comment on a task
 router.post(
   '/tasks/:taskId/comments',
-  validate(listCommentsSchema, 'params'),
+  validate(commentParamsSchema, 'params'),
   validate(createCommentSchema),
   commentController.create,
 );

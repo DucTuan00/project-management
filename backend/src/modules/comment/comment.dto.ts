@@ -20,12 +20,11 @@ export const commentParamsSchema = z.object({
   commentId: z.string().uuid('Invalid comment ID').optional(),
 });
 
-export const listCommentsSchema = z.object({
-  taskId: z.string().uuid('Invalid task ID'),
+export const listCommentsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export type CreateCommentDto = z.infer<typeof createCommentSchema>;
 export type UpdateCommentDto = z.infer<typeof updateCommentSchema>;
-export type ListCommentsQuery = z.infer<typeof listCommentsSchema>;
+export type ListCommentsQuery = z.infer<typeof listCommentsQuerySchema>;
