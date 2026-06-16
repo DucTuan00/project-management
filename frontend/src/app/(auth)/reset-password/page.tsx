@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Lock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ export default function ResetPasswordPage() {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordFormData>({
@@ -74,22 +74,36 @@ export default function ResetPasswordPage() {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <Input
-          label="New Password"
-          type="password"
-          placeholder="Enter new password"
-          leftIcon={<Lock className="h-5 w-5" />}
-          error={errors.password?.message}
-          {...register('password')}
+        <Controller
+          name="password"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <Input
+              {...field}
+              label="New Password"
+              type="password"
+              placeholder="Enter new password"
+              leftIcon={<Lock className="h-5 w-5" />}
+              error={errors.password?.message}
+            />
+          )}
         />
 
-        <Input
-          label="Confirm Password"
-          type="password"
-          placeholder="Confirm new password"
-          leftIcon={<Lock className="h-5 w-5" />}
-          error={errors.confirmPassword?.message}
-          {...register('confirmPassword')}
+        <Controller
+          name="confirmPassword"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <Input
+              {...field}
+              label="Confirm Password"
+              type="password"
+              placeholder="Confirm new password"
+              leftIcon={<Lock className="h-5 w-5" />}
+              error={errors.confirmPassword?.message}
+            />
+          )}
         />
 
         <Button

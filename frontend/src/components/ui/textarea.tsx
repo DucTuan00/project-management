@@ -26,13 +26,15 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         multiline
         minRows={4}
         className={cn(className)}
-        InputProps={{
-          style: {
-            minHeight: '100px',
+        slotProps={{
+          input: {
+            style: {
+              minHeight: '100px',
+            },
           },
-        }}
-        inputProps={{
-          ...props,
+          htmlInput: {
+            ...props,
+          },
         }}
         sx={{
           '& .MuiOutlinedInput-root': {

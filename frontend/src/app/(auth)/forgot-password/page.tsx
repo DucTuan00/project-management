@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = React.useState(false);
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ForgotPasswordFormData>({
@@ -73,13 +73,20 @@ export default function ForgotPasswordPage() {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <Input
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          leftIcon={<Mail className="h-5 w-5" />}
-          error={errors.email?.message}
-          {...register('email')}
+        <Controller
+          name="email"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <Input
+              {...field}
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              leftIcon={<Mail className="h-5 w-5" />}
+              error={errors.email?.message}
+            />
+          )}
         />
 
         <Button

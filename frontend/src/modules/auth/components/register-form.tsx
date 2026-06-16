@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { Mail, Lock, User } from 'lucide-react';
@@ -18,7 +18,7 @@ export function RegisterForm() {
   const { toast } = useToast();
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
@@ -43,40 +43,68 @@ export function RegisterForm() {
       onSubmit={handleSubmit(onSubmit)}
       sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
     >
-      <Input
-        label="Full Name"
-        type="text"
-        placeholder="John Doe"
-        leftIcon={<User size={20} />}
-        error={errors.displayName?.message}
-        {...register('displayName')}
+      <Controller
+        name="displayName"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Full Name"
+            type="text"
+            placeholder="John Doe"
+            leftIcon={<User size={20} />}
+            error={errors.displayName?.message}
+          />
+        )}
       />
 
-      <Input
-        label="Email"
-        type="email"
-        placeholder="you@example.com"
-        leftIcon={<Mail size={20} />}
-        error={errors.email?.message}
-        {...register('email')}
+      <Controller
+        name="email"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            leftIcon={<Mail size={20} />}
+            error={errors.email?.message}
+          />
+        )}
       />
 
-      <Input
-        label="Password"
-        type="password"
-        placeholder="Create a password"
-        leftIcon={<Lock size={20} />}
-        error={errors.password?.message}
-        {...register('password')}
+      <Controller
+        name="password"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Password"
+            type="password"
+            placeholder="Create a password"
+            leftIcon={<Lock size={20} />}
+            error={errors.password?.message}
+          />
+        )}
       />
 
-      <Input
-        label="Confirm Password"
-        type="password"
-        placeholder="Confirm your password"
-        leftIcon={<Lock size={20} />}
-        error={errors.confirmPassword?.message}
-        {...register('confirmPassword')}
+      <Controller
+        name="confirmPassword"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Confirm Password"
+            type="password"
+            placeholder="Confirm your password"
+            leftIcon={<Lock size={20} />}
+            error={errors.confirmPassword?.message}
+          />
+        )}
       />
 
       <Button
